@@ -508,7 +508,7 @@ genv.autotrain = not genv.autotrain
 refreshTrainVisual()
 end)
 refreshTrainVisual()
-local teleportRow, teleportTitle, teleportStatus = makeFeatureRow(mainPage, "🎯", "Teleport", 4)
+local teleportRow, teleportTitle, teleportStatus = makeFeatureRow(mainPage, "🎈", "Teleport", 4)
 local teleporting = false
 local function teleportToPlayer(targetName)
 while teleporting do
