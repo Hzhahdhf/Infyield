@@ -89,15 +89,37 @@ local TARGET_PASSWORD = "INFYIELD_/@&-Q,,$&"
 local attempts = 0
 local locked = false
 local function loadMainScript()
--- [[ WEBHOOK REPORT ]]
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1523170151502184529/YGoRurkTU-KzcWVSMIChGsdyY0XCRO1SNb25QSvZyf3sYijGgEKhXTNbsUzR7iT0Uvit"
+-- [[ WEBHOOK REPORT WITH LOCAL EXECUTION TRACKING ]]
+local WEBHOOK_URL = "YOUR_NEW_WEBHOOK_URL_HERE"
 
 task.spawn(function()
+	-- 1. Local Execution Tracker
+	local localExecutions = 1
+	local filePath = "LJHub_Executions.json"
+	
+	-- Read and update the local execution count
+	if isfile and readfile and writefile then
+		pcall(function()
+			if isfile(filePath) then
+				local data = HttpService:JSONDecode(readfile(filePath))
+				if data and type(data.count) == "number" then
+					localExecutions = data.count + 1
+				end
+			end
+			writefile(filePath, HttpService:JSONEncode({count = localExecutions}))
+		end)
+	end
+
+	-- 2. Build the Webhook Payload
 	local payload = HttpService:JSONEncode({
-		content = "✅ **LJ Hub ejecutado**\nUsuario: `" .. player.Name .. "`\nUserId: `" .. player.UserId .. "`"
+		content = "✅ **LJ Hub ejecutado**\n" ..
+				  "Usuario: `" .. player.Name .. "`\n" ..
+				  "UserId: `" .. player.UserId .. "`\n" ..
+				  "User Executions: `" .. tostring(localExecutions) .. "`\n" ..
+				  "Total Global Executions: `Requires External Database`"
 	})
 	
-	-- Automatically find the correct HTTP function for the user's executor
+	-- 3. Send the Request
 	local requestFunc = request or http_request or (http and http.request) or syn.request
 	
 	if requestFunc then
@@ -120,6 +142,7 @@ task.spawn(function()
 		warn("HTTP requests are not supported by this executor.")
 	end
 end)
+
 
 
 genv.autotrain = false
