@@ -37,7 +37,7 @@ if existingGui then
 existingGui:Destroy()
 end
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "LJ hub"
+screenGui.Name = "LJ hub 3.0V"
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = player.PlayerGui
