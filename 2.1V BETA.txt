@@ -140,7 +140,7 @@ local function loadMainScript()
 	end
 
 	task.spawn(function()
-		while task.wait(0.01) do
+		while task.wait(0.008) do
 			if genv.autotrain then
 				local sword = getSword()
 				if sword then
