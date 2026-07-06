@@ -91,18 +91,36 @@ local locked = false
 local function loadMainScript()
 -- [[ WEBHOOK REPORT ]]
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1523170151502184529/YGoRurkTU-KzcWVSMIChGsdyY0XCRO1SNb25QSvZyf3sYijGgEKhXTNbsUzR7iT0Uvit"
+
 task.spawn(function()
 	local payload = HttpService:JSONEncode({
 		content = "✅ **LJ Hub ejecutado**\nUsuario: `" .. player.Name .. "`\nUserId: `" .. player.UserId .. "`"
 	})
-	local ok, err = pcall(function()
-		HttpService:PostAsync(WEBHOOK_URL, payload, Enum.HttpContentType.ApplicationJson)
-	end)
-	if ok then
-		task.wait(0.5)
-		showToast("Conectado como " .. player.Name .. " ✓", THEME.ButtonOn)
+	
+	-- Automatically find the correct HTTP function for the user's executor
+	local requestFunc = request or http_request or (http and http.request) or syn.request
+	
+	if requestFunc then
+		local ok, err = pcall(function()
+			requestFunc({
+				Url = WEBHOOK_URL,
+				Method = "POST",
+				Headers = {
+					["Content-Type"] = "application/json"
+				},
+				Body = payload
+			})
+		end)
+		
+		if ok then
+			task.wait(0.5)
+			showToast("Conectado como " .. player.Name .. " ✓", THEME.ButtonOn)
+		end
+	else
+		warn("HTTP requests are not supported by this executor.")
 	end
 end)
+
 
 genv.autotrain = false
 if genv.antiAfkOn == nil then genv.antiAfkOn = true end
