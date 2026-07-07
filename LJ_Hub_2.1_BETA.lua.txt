@@ -483,7 +483,7 @@ local function loadMainScript()
 	settingsNav.MouseButton1Click:Connect(function() setTab(settingsNav) end)
 	setTab(mainNav)
 	
-	-- [[ TRANSPARENT ROW MATRIX COMPONENTS ]]
+	
 	local function makeFeatureRow(parent, icon, labelText, subtitleText, order, customStatusWidth)
 		local hasSub = (subtitleText ~= nil and subtitleText ~= "")
 		local row = Instance.new("TextButton", parent)
