@@ -279,7 +279,7 @@ local function loadMainScript()
 			task.wait(1.5)
 		end
 		if alertOverlay.Visible == false then
-			showToast("Anti-AFK Security Shield Active.", THEME.TextMain)
+			showToast("Anti-AFK  Active.", THEME.TextMain)
 		end
 	end)
 	
@@ -754,7 +754,7 @@ local function loadMainScript()
 	Players.PlayerRemoving:Connect(refreshNearbyChips)
 	refreshNearbyChips()
 	
-	local teleportRow, _, teleportStatus = makeFeatureRow(teleportPage, "🎯", "Loop Teleport", "Constantly locks your position to player", 3, 70)
+	local teleportRow, _, teleportStatus = makeFeatureRow(teleportPage, "🎯", " Teleport", "Constantly locks your position to player", 3, 70)
 	local teleporting = false
 	applyHover(teleportRow, THEME.ButtonIdle, THEME.ButtonHover, function() return teleporting end)
 	
