@@ -824,6 +824,26 @@ local function loadMainScript()
 	corner(toggleButton, 4)
 	Instance.new("UIStroke", toggleButton).Color = THEME.AccentLine
 	applyHover(toggleButton, THEME.Panel, THEME.ButtonHover)
+	
+	-- [[ DRAG LOGIC ADDED HERE ]]
+	local dragToggleT, dragStartT, startPosT
+	toggleButton.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragToggleT = true
+			dragStartT = input.Position
+			startPosT = toggleButton.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then dragToggleT = false end
+			end)
+		end
+	end)
+	toggleButton.InputChanged:Connect(function(input)
+		if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragToggleT then
+			local delta = input.Position - dragStartT
+			toggleButton.Position = UDim2.new(startPosT.X.Scale, startPosT.X.Offset + delta.X, startPosT.Y.Scale, startPosT.Y.Offset + delta.Y)
+		end
+	end)
+	
 	toggleButton.MouseButton1Click:Connect(function()
 		frame.Visible = not frame.Visible
 		toggleButton.Text = frame.Visible and "Hide" or "Show"
