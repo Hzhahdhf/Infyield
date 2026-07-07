@@ -14,7 +14,7 @@ local DEVELOPERS = {
 	["josemiet"] = true
 }
 
--- [[ PREMIUM BLACK TRANSPARENT THEME ]]
+
 local THEME = {
 	Background = Color3.fromRGB(10, 10, 12),
 	Panel = Color3.fromRGB(16, 16, 20),
@@ -57,7 +57,7 @@ screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = player.PlayerGui
 
--- [[ COMPACT LOGIN CONTAINER ]]
+
 local passFrame = Instance.new("Frame", screenGui)
 passFrame.Size = UDim2.new(0, 280, 0, 150)
 passFrame.Position = UDim2.new(0.5, -140, 0.5, -75)
@@ -158,7 +158,7 @@ local function loadMainScript()
 	if genv.antiAfkOn == nil then genv.antiAfkOn = true end
 	loadSettings()
 
-	-- [[ AUTO TRAIN CORE ]]
+
 	local CONFIG = { activatesPerFrame = 2 }
 	local character = player.Character or player.CharacterAdded:Wait()
 	local trackedSword, enabledConnection = nil, nil
@@ -196,7 +196,7 @@ local function loadMainScript()
 		end
 	end)
 	
-	-- [[ TRANSPARENT MAIN FRAME ]]
+
 	local frame = Instance.new("Frame", screenGui)
 	frame.Size = UDim2.new(0, 460, 0, 290)
 	frame.Position = UDim2.new(0.5, -230, 0.5, -145)
@@ -224,7 +224,7 @@ local function loadMainScript()
 		end
 	end)
 	
-	-- [[ PREMIUM ALERTS ]]
+
 	local alertOverlay = Instance.new("Frame", frame)
 	alertOverlay.Size = UDim2.new(1, 0, 1, 0)
 	alertOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -283,7 +283,7 @@ local function loadMainScript()
 		end
 	end)
 	
-	-- [[ HEADER ]]
+	
 	local header = Instance.new("Frame", frame)
 	header.Size = UDim2.new(1, 0, 0, 40)
 	header.BackgroundColor3 = THEME.Panel
@@ -340,7 +340,7 @@ local function loadMainScript()
 		end
 	end)
 	
-	-- [[ SIDEBAR & PROFILE SECTION ]]
+
 	local sidebar = Instance.new("Frame", frame)
 	sidebar.Size = UDim2.new(0, 125, 1, -41)
 	sidebar.Position = UDim2.new(0, 0, 0, 41)
@@ -405,7 +405,7 @@ local function loadMainScript()
 		end
 	end)
 	
-	-- [[ CONTENT FRAME ]]
+
 	local content = Instance.new("Frame", frame)
 	content.Size = UDim2.new(1, -126, 1, -41)
 	content.Position = UDim2.new(0, 126, 0, 41)
@@ -431,7 +431,7 @@ local function loadMainScript()
 	local teleportPage = createPage()
 	local settingsPage = createPage()
 	
-	-- [[ SIDE NAVIGATION ]]
+
 	local function createNav(text, yPos)
 		local btn = Instance.new("TextButton", sidebar)
 		btn.Size = UDim2.new(1, -12, 0, 30)
@@ -547,9 +547,8 @@ local function loadMainScript()
 		return row, titleLabel, statusLabel
 	end
 
-	-- ==========================================
-	-- [[ TAB 1: MAIN ]]
-	-- ==========================================
+	
+	
 	local statsLabel = Instance.new("TextLabel", mainPage)
 	statsLabel.Size = UDim2.new(1, 0, 0, 16)
 	statsLabel.BackgroundTransparency = 1
@@ -696,9 +695,9 @@ local function loadMainScript()
 		end)
 	end)
 
-	-- ==========================================
-	-- [[ TAB 2: TELEPORT ]]
-	-- ==========================================
+	
+	
+
 	local nameBox = Instance.new("TextBox", teleportPage)
 	nameBox.Size = UDim2.new(1, 0, 0, 34)
 	nameBox.PlaceholderText = "Target Username..."
@@ -792,9 +791,8 @@ local function loadMainScript()
 		task.spawn(function() teleportToPlayer(targetName) end)
 	end)
 
-	-- ==========================================
-	-- [[ TAB 3: SETTINGS ]]
-	-- ==========================================
+
+
 	local antiAfkConnection = nil
 	local function setAntiAfk(on)
 		if on and not antiAfkConnection then
@@ -827,7 +825,7 @@ local function loadMainScript()
 		saveSettings()
 	end)
 	
-	-- [[ PREMIUM TRANSPARENT PIN HUD TOGGLE ]]
+	
 	local toggleButton = Instance.new("TextButton", screenGui)
 	toggleButton.Size = UDim2.new(0, 80, 0, 26)
 	toggleButton.Position = UDim2.new(0, 15, 0, 60)
