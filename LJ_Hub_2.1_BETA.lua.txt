@@ -594,22 +594,39 @@ local function loadMainScript()
 	applyHover(antiLagRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.antiLagActive end)
 	
 	local function runMassiveOptimization()
-		for _, v in pairs(Lighting:GetChildren()) do
-			if v:IsA("Sky") or v:IsA("Atmosphere") or v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
-				v:Destroy()
+		local function purgeLightingFx()
+			for _, v in pairs(Lighting:GetChildren()) do
+				if v:IsA("Sky") or v:IsA("Atmosphere") or v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
+					v:Destroy()
+				end
 			end
 		end
+		purgeLightingFx()
+		Lighting.DescendantAdded:Connect(function(v)
+			task.defer(purgeLightingFx)
+		end)
 		
 		local solidSky = Instance.new("Sky")
 		solidSky.SkyboxBk, solidSky.SkyboxDn, solidSky.SkyboxFt, solidSky.SkyboxLf, solidSky.SkyboxRt, solidSky.SkyboxUp = "", "", "", "", "", ""
 		solidSky.CelestialBodiesShown = false
 		solidSky.Parent = Lighting
 		
+		-- Motor de render más barato + cero sombras/niebla/post-fx
+		pcall(function() Lighting.Technology = Enum.Technology.Compatibility end)
 		Lighting.GlobalShadows = false
 		Lighting.FogEnd = 9e9
 		Lighting.Brightness = 0
 		Lighting.Ambient = Color3.fromRGB(130, 130, 130)
 		Lighting.OutdoorAmbient = Color3.fromRGB(130, 130, 130)
+		pcall(function() Lighting.EnvironmentDiffuseScale = 0 end)
+		pcall(function() Lighting.EnvironmentSpecularScale = 0 end)
+		
+		-- Reduce distancia de renderizado / streaming de partes lejanas
+		pcall(function()
+			workspace.StreamingEnabled = true
+			workspace.StreamingMinRadius = 96
+			workspace.StreamingTargetRadius = 128
+		end)
 		
 		local function targetAsset(obj)
 			pcall(function()
@@ -619,16 +636,20 @@ local function loadMainScript()
 					obj.CastShadow = false
 				elseif obj:IsA("Decal") or obj:IsA("Texture") or obj:IsA("Clothing") or obj:IsA("ShirtGraphic") then
 					obj:Destroy()
-				elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") or obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") then
+				elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") or obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") or obj:IsA("Explosion") then
 					obj:Destroy()
 				elseif obj:IsA("Light") then
 					obj.Shadows = false
+					if obj:IsA("PointLight") or obj:IsA("SpotLight") then obj.Range = 0 end
 				elseif obj:IsA("MeshPart") then
 					obj.Material = Enum.Material.SmoothPlastic
 					obj.CastShadow = false
 					obj.TextureID = ""
 				elseif obj:IsA("SpecialMesh") then
 					obj.TextureId = ""
+				elseif obj:IsA("Sound") then
+					-- deja el audio de música/ambiente pero corta el volumen 3D pesado
+					if obj.Looped and obj.Volume > 0 then obj.Volume = math.min(obj.Volume, 0.3) end
 				end
 			end)
 		end
@@ -644,6 +665,9 @@ local function loadMainScript()
 			workspace.Terrain.WaterReflectance = 0
 			workspace.Terrain.WaterTransparency = 0
 		end)
+		
+		-- Baja carga de la cámara: menos niebla de distancia visible = menos partes procesadas
+		pcall(function() workspace.CurrentCamera.FieldOfView = 65 end)
 	end
 
 	antiLagRow.MouseButton1Click:Connect(function()
@@ -826,42 +850,64 @@ local function loadMainScript()
 	end)
 	
 	
-	local toggleButton = Instance.new("TextButton", screenGui)
-	toggleButton.Size = UDim2.new(0, 80, 0, 26)
+	-- Logo icon toggle (replaces the old "Hide UI / Show UI" text button)
+	local LOGO_ASSET_ID = "rbxassetid://90489659743852" -- Tu logo LJ Hub
+
+	local toggleButton = Instance.new("ImageButton", screenGui)
+	toggleButton.Size = UDim2.new(0, 44, 0, 44)
 	toggleButton.Position = UDim2.new(0, 15, 0, 60)
 	toggleButton.BackgroundColor3 = THEME.Panel
-	toggleButton.BackgroundTransparency = 0.3
-	toggleButton.TextColor3 = THEME.TextMain
-	toggleButton.Font = Enum.Font.GothamBold
-	toggleButton.TextSize = 11
-	toggleButton.Text = "Hide UI"
-	corner(toggleButton, 4)
+	toggleButton.BackgroundTransparency = 0.15
+	toggleButton.Image = LOGO_ASSET_ID
+	toggleButton.ScaleType = Enum.ScaleType.Fit
+	corner(toggleButton, 10)
 	Instance.new("UIStroke", toggleButton).Color = THEME.AccentLine
-	applyHover(toggleButton, THEME.Panel, THEME.ButtonHover)
-	
-	local dragToggleT, dragStartT, startPosT
+
+	local togglePad = Instance.new("UIPadding", toggleButton)
+	togglePad.PaddingTop = UDim.new(0, 5)
+	togglePad.PaddingBottom = UDim.new(0, 5)
+	togglePad.PaddingLeft = UDim.new(0, 5)
+	togglePad.PaddingRight = UDim.new(0, 5)
+
+	toggleButton.MouseEnter:Connect(function()
+		TweenService:Create(toggleButton, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundColor3 = THEME.ButtonHover }):Play()
+	end)
+	toggleButton.MouseLeave:Connect(function()
+		TweenService:Create(toggleButton, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundColor3 = THEME.Panel }):Play()
+	end)
+
+	local function refreshToggleIcon()
+		-- Visual feedback without text: dim the icon when the UI is hidden
+		toggleButton.ImageTransparency = frame.Visible and 0 or 0.55
+	end
+
+	local dragToggleT, dragStartT, startPosT, movedT
 	toggleButton.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragToggleT = true; dragStartT = input.Position; startPosT = toggleButton.Position
+			dragToggleT = true; dragStartT = input.Position; startPosT = toggleButton.Position; movedT = false
 			input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragToggleT = false end end)
 		end
 	end)
 	toggleButton.InputChanged:Connect(function(input)
 		if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragToggleT then
 			local delta = input.Position - dragStartT
+			if delta.Magnitude > 3 then movedT = true end
 			toggleButton.Position = UDim2.new(startPosT.X.Scale, startPosT.X.Offset + delta.X, startPosT.Y.Scale, startPosT.Y.Offset + delta.Y)
 		end
 	end)
-	
+
 	toggleButton.MouseButton1Click:Connect(function()
+		if movedT then return end -- evita togglear tras arrastrar
 		frame.Visible = not frame.Visible
-		toggleButton.Text = frame.Visible and "Hide UI" or "Show UI"
+		refreshToggleIcon()
 	end)
-	
+
 	closeButton.MouseButton1Click:Connect(function()
 		frame.Visible = false
-		toggleButton.Text = "Show UI"
+		refreshToggleIcon()
 	end)
+
+	refreshToggleIcon()
 end
 
 passBtn.MouseButton1Click:Connect(function()
