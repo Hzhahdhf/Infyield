@@ -154,7 +154,7 @@ function loadMainScript()
 	local function saveSettings()
 		if writefile then
 			pcall(function()
-				local data = { autotrain = genv.autotrain, antiAfkOn = genv.antiAfkOn, autoUpgrade = genv.autoUpgrade }
+				local data = { autotrain = genv.autotrain, antiAfkOn = genv.antiAfkOn, autoUpgrade = genv.autoUpgrade, autoDisablePvP = genv.autoDisablePvP }
 				writefile("LJHub_Compact_Settings.json", HttpService:JSONEncode(data))
 			end)
 		end
@@ -168,6 +168,7 @@ function loadMainScript()
 					if data.autotrain ~= nil then genv.autotrain = data.autotrain end
 					if data.antiAfkOn ~= nil then genv.antiAfkOn = data.antiAfkOn end
 					if data.autoUpgrade ~= nil then genv.autoUpgrade = data.autoUpgrade end
+					if data.autoDisablePvP ~= nil then genv.autoDisablePvP = data.autoDisablePvP end
 				end
 			end)
 		end
@@ -176,6 +177,7 @@ function loadMainScript()
 	genv.autotrain = false
 	genv.antiLagActive = false
 	genv.autoUpgrade = false
+	genv.autoDisablePvP = false
 	if genv.antiAfkOn == nil then genv.antiAfkOn = true end
 	loadSettings()
 
@@ -368,11 +370,13 @@ function loadMainScript()
 	bottomInfo.Size = UDim2.new(1, 0, 0, 50)
 	bottomInfo.Position = UDim2.new(0, 0, 1, -55)
 	bottomInfo.BackgroundTransparency = 1
+	bottomInfo.ZIndex = 15
 	
 	local sideAvatar = Instance.new("ImageLabel", bottomInfo)
 	sideAvatar.Size = UDim2.new(0, 30, 0, 30)
 	sideAvatar.Position = UDim2.new(0, 10, 0, 10)
 	sideAvatar.BackgroundColor3 = THEME.Background
+	sideAvatar.ZIndex = 16
 	corner(sideAvatar, 15)
 	Instance.new("UIStroke", sideAvatar).Color = THEME.AccentLine
 	task.spawn(function()
@@ -390,6 +394,7 @@ function loadMainScript()
 	sideName.TextSize = 11
 	sideName.TextXAlignment = Enum.TextXAlignment.Left
 	sideName.TextTruncate = Enum.TextTruncate.AtEnd
+	sideName.ZIndex = 16
 
 	local playtimeLbl = Instance.new("TextLabel", bottomInfo)
 	playtimeLbl.Size = UDim2.new(1, -50, 0, 12)
@@ -400,6 +405,7 @@ function loadMainScript()
 	playtimeLbl.Font = Enum.Font.GothamMedium
 	playtimeLbl.TextSize = 10
 	playtimeLbl.TextXAlignment = Enum.TextXAlignment.Left
+	playtimeLbl.ZIndex = 16
 	
 	local startTime = os.time()
 	task.spawn(function()
@@ -438,6 +444,7 @@ function loadMainScript()
 	local mainPage = createPage()
 	local featuresPage = createPage()
 	local teleportPage = createPage()
+	local safeModePage = createPage()
 	local settingsPage = createPage()
 	
 	local function createNav(text, yPos)
@@ -466,12 +473,14 @@ function loadMainScript()
 	local mainNav, mainInd = createNav("🏠  Home", 12)
 	local featuresNav, featInd = createNav("⚡  Features", 50)
 	local tpNav, tpInd = createNav("🎯  Teleport", 88)
-	local settingsNav, setInd = createNav("⚙  Settings", 126)
+	local safeModeNav, safeModeInd = createNav("🛡️  Safe Mode", 126)
+	local settingsNav, setInd = createNav("⚙  Settings", 164)
 	
 	local navEntries = { 
 		{mainNav, mainInd, mainPage}, 
 		{featuresNav, featInd, featuresPage}, 
 		{tpNav, tpInd, teleportPage}, 
+		{safeModeNav, safeModeInd, safeModePage},
 		{settingsNav, setInd, settingsPage} 
 	}
 	
@@ -493,6 +502,7 @@ function loadMainScript()
 	mainNav.MouseButton1Click:Connect(function() setTab(mainNav) end)
 	featuresNav.MouseButton1Click:Connect(function() setTab(featuresNav) end)
 	tpNav.MouseButton1Click:Connect(function() setTab(tpNav) end)
+	safeModeNav.MouseButton1Click:Connect(function() setTab(safeModeNav) end)
 	settingsNav.MouseButton1Click:Connect(function() setTab(settingsNav) end)
 	setTab(mainNav)
 
@@ -866,6 +876,79 @@ function loadMainScript()
 		teleportStatus.TextColor3 = THEME.Accent
 		showToast("Teleporting to " .. targetName, THEME.TextMain)
 		task.spawn(function() teleportToPlayer(targetName) end)
+	end)
+
+	local autoDisablePvPRow, _, autoDisablePvPStatus = makeFeatureRow(safeModePage, "🛡️", "Auto Disable PvP", "Automatically flags off PvP protection loops", 1)
+	local function refreshPvPVisual()
+		autoDisablePvPRow.BackgroundColor3 = genv.autoDisablePvP and THEME.ButtonOn or THEME.ButtonIdle
+		autoDisablePvPStatus.Text = genv.autoDisablePvP and "ON" or "OFF"
+		autoDisablePvPStatus.TextColor3 = genv.autoDisablePvP and THEME.Accent or THEME.TextDim
+	end
+	applyHover(autoDisablePvPRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.autoDisablePvP end)
+	
+	autoDisablePvPRow.MouseButton1Click:Connect(function()
+		genv.autoDisablePvP = not genv.autoDisablePvP
+		refreshPvPVisual()
+		saveSettings()
+	end)
+	refreshPvPVisual()
+
+	task.spawn(function()
+		while true do
+			if genv.autoDisablePvP then
+				pcall(function()
+					local playerGui = player:FindFirstChild("PlayerGui")
+					if playerGui then
+						for _, desc in ipairs(playerGui:GetDescendants()) do
+							if desc:IsA("TextButton") or desc:IsA("ImageButton") then
+								local labelMatch = string.find(string.lower(desc.Text or ""), "tap to disable") or string.find(string.lower(desc.Text or ""), "disable pvp")
+								local instanceMatch = string.find(string.lower(desc.Name), "pvp") and (desc:IsA("ImageButton") or string.find(string.lower(desc.Name), "btn") or string.find(string.lower(desc.Name), "button"))
+								
+								if (labelMatch or instanceMatch) and desc.Visible and desc.AbsoluteSize.X > 0 then
+									if firesignal then
+										firesignal(desc.MouseButton1Click)
+										firesignal(desc.Activated)
+									else
+										desc:Activate()
+									end
+								end
+							end
+						end
+					end
+				end)
+			end
+			task.wait(0.5)
+		end
+	end)
+
+	local tpSafeRow, _, tpSafeStatus = makeFeatureRow(safeModePage, "🏝️", "TP Safe Place", "Teleports to an isolated safe platform skybox", 2, 70)
+	tpSafeStatus.Text = "Execute"
+	applyHover(tpSafeRow, THEME.ButtonIdle, THEME.ButtonHover)
+	tpSafeRow.MouseButton1Click:Connect(function()
+		pcall(function()
+			local char = player.Character
+			local hrp = char and char:FindFirstChild("HumanoidRootPart")
+			if hrp then
+				local safePlate = workspace:FindFirstChild("LJ_SafePlatform")
+				if not safePlate then
+					safePlate = Instance.new("Part")
+					safePlate.Name = "LJ_SafePlatform"
+					safePlate.Size = Vector3.new(25, 1, 25)
+					safePlate.CFrame = CFrame.new(0, 8000, 0)
+					safePlate.Anchored = true
+					safePlate.Material = Enum.Material.SmoothPlastic
+					safePlate.Color = Color3.fromRGB(20, 20, 25)
+					safePlate.Parent = workspace
+					
+					local w1 = Instance.new("Part", safePlate); w1.Size = Vector3.new(25, 5, 1); w1.CFrame = safePlate.CFrame * CFrame.new(0, 2.5, 12); w1.Anchored = true; w1.Transparency = 0.8
+					local w2 = Instance.new("Part", safePlate); w2.Size = Vector3.new(25, 5, 1); w2.CFrame = safePlate.CFrame * CFrame.new(0, 2.5, -12); w2.Anchored = true; w2.Transparency = 0.8
+					local w3 = Instance.new("Part", safePlate); w3.Size = Vector3.new(1, 5, 25); w3.CFrame = safePlate.CFrame * CFrame.new(12, 2.5, 0); w3.Anchored = true; w3.Transparency = 0.8
+					local w4 = Instance.new("Part", safePlate); w4.Size = Vector3.new(1, 5, 25); w4.CFrame = safePlate.CFrame * CFrame.new(-12, 2.5, 0); w4.Anchored = true; w4.Transparency = 0.8
+				end
+				hrp.CFrame = safePlate.CFrame + Vector3.new(0, 3, 0)
+				showToast("Teleported to Safe Zone Platform!", THEME.Accent)
+			end
+		end)
 	end)
 
 	local antiAfkConnection = nil
