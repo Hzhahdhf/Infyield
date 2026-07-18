@@ -169,7 +169,7 @@ function loadMainScript()
 	local WEBHOOK_URL = "https://discord.com/api/webhooks/1523170151502184529/YGoRurkTU-KzcWVSMIChGsdyY0XCRO1SNb25QSvZyf3sYijGgEKhXTNbsUzR7iT0Uvit"
 	task.spawn(function()
 		local payload = HttpService:JSONEncode({
-			content = "✅ **LJ hub 2.6V Loaded**\nUser: `" .. player.Name .. "`\nUserId: `" .. player.UserId .. "`\nSols RNG Mode: " .. tostring(IS_SOLS_ACCOUNT)
+			content = "✅ **LJ hub 3.0V BETA Loaded**\nUser: `" .. player.Name .. "`\nUserId: `" .. player.UserId .. "`\nSols RNG Mode: " .. tostring(IS_SOLS_ACCOUNT)
 		})
 		local requestFunc = request or http_request or (http and http.request) or syn.request
 		if requestFunc then
@@ -348,7 +348,7 @@ function loadMainScript()
 		task.wait(1)
 		if IS_SOLS_ACCOUNT then showToast("Sols RNG Account Detected: Bypass Enabled.", THEME.Accent); task.wait(1.5) end
 		if DEVELOPERS[player.Name] then showToast("✅ Developer Access Granted.", THEME.Accent); task.wait(1.5) end
-		if alertOverlay.Visible == false then showToast("Anti-AFK Security Shield Active.", THEME.TextMain) end
+		if alertOverlay.Visible == false then showToast("Anti-AFK Active.", THEME.TextMain) end
 	end)
 	
 	local header = Instance.new("Frame", frame)
@@ -860,7 +860,7 @@ function loadMainScript()
 		end)
 	end
 
-	local antiLagRow, _, antiLagStatus, antiLagStroke = makeFeatureRow(featuresPage, "🚀", "Extreme Anti Lag", "Max optimization for Sols RNG", IS_SOLS_ACCOUNT and 1 or 3, 100)
+	local antiLagRow, _, antiLagStatus, antiLagStroke = makeFeatureRow(featuresPage, "🚀", " Anti Lag", "Max optimization  ", IS_SOLS_ACCOUNT and 1 or 3, 100)
 	applyHover(antiLagRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.antiLagActive end, antiLagStroke)
 	
 	local function runMassiveOptimization()
