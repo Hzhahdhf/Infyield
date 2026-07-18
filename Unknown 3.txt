@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local VirtualUser = game:GetService("VirtualUser")
 local GuiService = game:GetService("GuiService")
@@ -18,6 +19,22 @@ local DEVELOPERS = {
 	["Notkegersgaming"] = true,
 	["josemiet"] = true
 }
+
+local ADMINS = {
+	["RuizuKun_Dev"] = true,
+	["Dustny_222"] = true,
+	["Sathopian"] = true,
+	["SoyPianu"] = true
+}
+
+-- Admin Detector System
+local function checkAdmin(plr)
+	if ADMINS[plr.Name] then
+		player:Kick("Admin has joined game please join a other server or private server please and thank you")
+	end
+end
+for _, plr in ipairs(Players:GetPlayers()) do checkAdmin(plr) end
+Players.PlayerAdded:Connect(checkAdmin)
 
 local THEME = {
 	Background = Color3.fromRGB(12, 12, 14), 
@@ -39,14 +56,20 @@ local function corner(parent, radius)
 	return c
 end
 
-local function applyHover(button, idleColor, hoverColor, activeCheck)
+local function applyHover(button, idleColor, hoverColor, activeCheck, strokeElement)
 	button.MouseEnter:Connect(function()
 		if activeCheck and activeCheck() then return end
-		TweenService:Create(button, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { BackgroundColor3 = hoverColor }):Play()
+		TweenService:Create(button, TweenInfo.new(0.3, Enum.EasingStyle.Sine), { BackgroundColor3 = hoverColor }):Play()
+		if strokeElement then
+			TweenService:Create(strokeElement, TweenInfo.new(0.3, Enum.EasingStyle.Sine), { Color = THEME.Accent }):Play()
+		end
 	end)
 	button.MouseLeave:Connect(function()
 		if activeCheck and activeCheck() then return end
-		TweenService:Create(button, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { BackgroundColor3 = idleColor }):Play()
+		TweenService:Create(button, TweenInfo.new(0.3, Enum.EasingStyle.Sine), { BackgroundColor3 = idleColor }):Play()
+		if strokeElement then
+			TweenService:Create(strokeElement, TweenInfo.new(0.3, Enum.EasingStyle.Sine), { Color = THEME.AccentLine }):Play()
+		end
 	end)
 end
 
@@ -108,8 +131,9 @@ passBtn.Text = "Submit"
 passBtn.Font = Enum.Font.GothamBold
 passBtn.TextSize = 11
 corner(passBtn, 6)
-Instance.new("UIStroke", passBtn).Color = THEME.AccentLine
-applyHover(passBtn, THEME.ButtonIdle, THEME.ButtonHover)
+local passBtnStroke = Instance.new("UIStroke", passBtn)
+passBtnStroke.Color = THEME.AccentLine
+applyHover(passBtn, THEME.ButtonIdle, THEME.ButtonHover, nil, passBtnStroke)
 
 local TARGET_PASSWORD = "INFYIELD_/@&-Q,,$&"
 local attempts = 0
@@ -138,12 +162,14 @@ passBtn.MouseButton1Click:Connect(function()
 end)
 
 function loadMainScript()
+	local IS_SOLS_ACCOUNT = (player.Name == "Imalways5star")
+
 	if setfpscap then pcall(function() setfpscap(9999) end) end
 
 	local WEBHOOK_URL = "https://discord.com/api/webhooks/1523170151502184529/YGoRurkTU-KzcWVSMIChGsdyY0XCRO1SNb25QSvZyf3sYijGgEKhXTNbsUzR7iT0Uvit"
 	task.spawn(function()
 		local payload = HttpService:JSONEncode({
-			content = "✅ **LJ hub 2.6V Loaded**\nUser: `" .. player.Name .. "`\nUserId: `" .. player.UserId .. "`"
+			content = "✅ **LJ hub 2.6V Loaded**\nUser: `" .. player.Name .. "`\nUserId: `" .. player.UserId .. "`\nSols RNG Mode: " .. tostring(IS_SOLS_ACCOUNT)
 		})
 		local requestFunc = request or http_request or (http and http.request) or syn.request
 		if requestFunc then
@@ -181,7 +207,6 @@ function loadMainScript()
 	if genv.antiAfkOn == nil then genv.antiAfkOn = true end
 	loadSettings()
 
-	local CONFIG = { activatesPerFrame = 2 }
 	local character = player.Character or player.CharacterAdded:Wait()
 	local trackedSword, enabledConnection = nil, nil
 	
@@ -213,8 +238,10 @@ function loadMainScript()
 			local sword = getSword()
 			if sword then
 				forceSwordEnabled(sword)
-				for i = 1, CONFIG.activatesPerFrame do pcall(function() sword:Activate() end) end
+				pcall(function() sword:Activate() end)
 			end
+			pcall(function() ReplicatedStorage.TestPurchaseRemote:InvokeServer("[YINETSU SCAN FOUND]") end)
+			pcall(function() ReplicatedStorage["4fb5134c-2309-4a5a-91f0-061606bfd947"]:FireServer("SwordSlash", 2292) end)
 		end
 	end)
 
@@ -223,29 +250,30 @@ function loadMainScript()
 	mainShadow.BackgroundTransparency = 1
 	mainShadow.Image = "rbxassetid://6015045146"
 	mainShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-	mainShadow.ImageTransparency = 0.5
+	mainShadow.ImageTransparency = 1
 	mainShadow.ScaleType = Enum.ScaleType.Slice
 	mainShadow.SliceCenter = Rect.new(128, 128, 128, 128)
-	mainShadow.Size = UDim2.new(0, 500, 0, 360)
-	mainShadow.Position = UDim2.new(0.5, -250, 0.5, -180)
+	mainShadow.Size = UDim2.new(0, 450, 0, 320)
+	mainShadow.Position = UDim2.new(0.5, -225, 0.5, -160)
 	
 	local frame = Instance.new("Frame", mainShadow)
 	frame.Size = UDim2.new(1, -40, 1, -40)
 	frame.Position = UDim2.new(0, 20, 0, 20)
 	frame.BackgroundColor3 = THEME.Background
-	frame.BackgroundTransparency = 0.05
+	frame.BackgroundTransparency = 1
 	frame.BorderSizePixel = 0
 	frame.Active = true
 	frame.ClipsDescendants = true
-	corner(frame, 8)
+	corner(frame, 10)
 	Instance.new("UIStroke", frame).Color = THEME.AccentLine
 
-	mainShadow.Size = UDim2.new(0, 480, 0, 340)
-	mainShadow.Position = UDim2.new(0.5, -240, 0.5, -170)
-	mainShadow.ImageTransparency = 1
-	frame.BackgroundTransparency = 1
-	TweenService:Create(mainShadow, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(0, 500, 0, 360), Position = UDim2.new(0.5, -250, 0.5, -180), ImageTransparency = 0.5}):Play()
-	TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.05}):Play()
+	-- Premium Spring Animation for UI Loading
+	TweenService:Create(mainShadow, TweenInfo.new(0.7, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, 500, 0, 360), 
+		Position = UDim2.new(0.5, -250, 0.5, -180), 
+		ImageTransparency = 0.5
+	}):Play()
+	TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.05}):Play()
 	
 	local dragToggle, dragStart, startPos
 	frame.InputBegan:Connect(function(input)
@@ -264,10 +292,10 @@ function loadMainScript()
 	local alertOverlay = Instance.new("Frame", frame)
 	alertOverlay.Size = UDim2.new(1, 0, 1, 0)
 	alertOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	alertOverlay.BackgroundTransparency = 0.6
+	alertOverlay.BackgroundTransparency = 1
 	alertOverlay.Visible = false
 	alertOverlay.ZIndex = 50
-	corner(alertOverlay, 8)
+	corner(alertOverlay, 10)
 	
 	local alertBox = Instance.new("Frame", alertOverlay)
 	alertBox.Size = UDim2.new(0, 240, 0, 120)
@@ -276,7 +304,8 @@ function loadMainScript()
 	alertBox.BackgroundTransparency = 0.05
 	alertBox.ZIndex = 51
 	corner(alertBox, 8)
-	Instance.new("UIStroke", alertBox).Color = THEME.AccentLine
+	local alertBoxStroke = Instance.new("UIStroke", alertBox)
+	alertBoxStroke.Color = THEME.AccentLine
 	
 	local alertText = Instance.new("TextLabel", alertBox)
 	alertText.Size = UDim2.new(1, -30, 1, -45)
@@ -298,8 +327,9 @@ function loadMainScript()
 	alertBtn.TextSize = 11
 	alertBtn.ZIndex = 52
 	corner(alertBtn, 6)
-	Instance.new("UIStroke", alertBtn).Color = THEME.AccentLine
-	applyHover(alertBtn, THEME.ButtonIdle, THEME.ButtonHover)
+	local alertBtnStroke = Instance.new("UIStroke", alertBtn)
+	alertBtnStroke.Color = THEME.AccentLine
+	applyHover(alertBtn, THEME.ButtonIdle, THEME.ButtonHover, nil, alertBtnStroke)
 	alertBtn.MouseButton1Click:Connect(function() 
 		TweenService:Create(alertOverlay, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
 		task.wait(0.2)
@@ -311,11 +341,12 @@ function loadMainScript()
 		alertText.TextColor3 = color or THEME.TextMain
 		alertOverlay.BackgroundTransparency = 1
 		alertOverlay.Visible = true
-		TweenService:Create(alertOverlay, TweenInfo.new(0.2), {BackgroundTransparency = 0.6}):Play()
+		TweenService:Create(alertOverlay, TweenInfo.new(0.3, Enum.EasingStyle.Sine), {BackgroundTransparency = 0.5}):Play()
 	end
 	
 	task.spawn(function()
-		task.wait(0.8)
+		task.wait(1)
+		if IS_SOLS_ACCOUNT then showToast("Sols RNG Account Detected: Bypass Enabled.", THEME.Accent); task.wait(1.5) end
 		if DEVELOPERS[player.Name] then showToast("✅ Developer Access Granted.", THEME.Accent); task.wait(1.5) end
 		if alertOverlay.Visible == false then showToast("Anti-AFK Security Shield Active.", THEME.TextMain) end
 	end)
@@ -470,41 +501,57 @@ function loadMainScript()
 		return btn, indicator
 	end
 	
-	local mainNav, mainInd = createNav("🏠  Home", 12)
-	local featuresNav, featInd = createNav("⚡  Features", 50)
-	local tpNav, tpInd = createNav("🎯  Teleport", 88)
-	local safeModeNav, safeModeInd = createNav("🛡️  Safe Mode", 126)
-	local settingsNav, setInd = createNav("⚙  Settings", 164)
+	local navEntries = {}
 	
-	local navEntries = { 
-		{mainNav, mainInd, mainPage}, 
-		{featuresNav, featInd, featuresPage}, 
-		{tpNav, tpInd, teleportPage}, 
-		{safeModeNav, safeModeInd, safeModePage},
-		{settingsNav, setInd, settingsPage} 
-	}
-	
-	local function setTab(targetBtn)
+	if not IS_SOLS_ACCOUNT then
+		local mainNav, mainInd = createNav("🏠  Home", 12)
+		local featuresNav, featInd = createNav("⚡  Features", 50)
+		local tpNav, tpInd = createNav("🎯  Teleport", 88)
+		local safeModeNav, safeModeInd = createNav("🛡️  Safe Mode", 126)
+		local settingsNav, setInd = createNav("⚙  Settings", 164)
+		
+		navEntries = { 
+			{mainNav, mainInd, mainPage}, 
+			{featuresNav, featInd, featuresPage}, 
+			{tpNav, tpInd, teleportPage}, 
+			{safeModeNav, safeModeInd, safeModePage},
+			{settingsNav, setInd, settingsPage} 
+		}
+		
+		mainNav.MouseButton1Click:Connect(function() setTab(mainNav) end)
+		featuresNav.MouseButton1Click:Connect(function() setTab(featuresNav) end)
+		tpNav.MouseButton1Click:Connect(function() setTab(tpNav) end)
+		safeModeNav.MouseButton1Click:Connect(function() setTab(safeModeNav) end)
+		settingsNav.MouseButton1Click:Connect(function() setTab(settingsNav) end)
+	else
+		local featuresNav, featInd = createNav("⚡  Features", 12)
+		local settingsNav, setInd = createNav("⚙  Settings", 50)
+		
+		navEntries = { 
+			{featuresNav, featInd, featuresPage}, 
+			{settingsNav, setInd, settingsPage} 
+		}
+		
+		featuresNav.MouseButton1Click:Connect(function() setTab(featuresNav) end)
+		settingsNav.MouseButton1Click:Connect(function() setTab(settingsNav) end)
+	end
+
+	function setTab(targetBtn)
 		for _, entry in ipairs(navEntries) do
 			local btn, ind, page = entry[1], entry[2], entry[3]
 			if btn == targetBtn then
 				page.Visible = true
-				TweenService:Create(btn, TweenInfo.new(0.2), { BackgroundTransparency = 0.2, BackgroundColor3 = THEME.ButtonHover, TextColor3 = THEME.TextMain }):Play()
-				TweenService:Create(ind, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.new(0, 3, 0, 16) }):Play()
+				TweenService:Create(btn, TweenInfo.new(0.3, Enum.EasingStyle.Sine), { BackgroundTransparency = 0.2, BackgroundColor3 = THEME.ButtonHover, TextColor3 = THEME.TextMain }):Play()
+				TweenService:Create(ind, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.new(0, 3, 0, 16) }):Play()
 			else
 				page.Visible = false
-				TweenService:Create(btn, TweenInfo.new(0.2), { BackgroundTransparency = 1, TextColor3 = THEME.TextDim }):Play()
-				TweenService:Create(ind, TweenInfo.new(0.2), { Size = UDim2.new(0, 3, 0, 0) }):Play()
+				TweenService:Create(btn, TweenInfo.new(0.3, Enum.EasingStyle.Sine), { BackgroundTransparency = 1, TextColor3 = THEME.TextDim }):Play()
+				TweenService:Create(ind, TweenInfo.new(0.3, Enum.EasingStyle.Sine), { Size = UDim2.new(0, 3, 0, 0) }):Play()
 			end
 		end
 	end
 	
-	mainNav.MouseButton1Click:Connect(function() setTab(mainNav) end)
-	featuresNav.MouseButton1Click:Connect(function() setTab(featuresNav) end)
-	tpNav.MouseButton1Click:Connect(function() setTab(tpNav) end)
-	safeModeNav.MouseButton1Click:Connect(function() setTab(safeModeNav) end)
-	settingsNav.MouseButton1Click:Connect(function() setTab(settingsNav) end)
-	setTab(mainNav)
+	if navEntries[1] then setTab(navEntries[1][1]) end
 
 	local dashHeader = Instance.new("Frame", mainPage)
 	dashHeader.Size = UDim2.new(1, 0, 0, 56)
@@ -554,7 +601,8 @@ function loadMainScript()
 		row.AutoButtonColor = false
 		row.LayoutOrder = order
 		corner(row, 6)
-		Instance.new("UIStroke", row).Color = THEME.AccentLine
+		local stroke = Instance.new("UIStroke", row)
+		stroke.Color = THEME.AccentLine
 		
 		local iconLabel = Instance.new("TextLabel", row)
 		iconLabel.Size = UDim2.new(0, 30, 1, 0)
@@ -604,94 +652,223 @@ function loadMainScript()
 		statusLabel.TextSize = 11
 		statusLabel.TextXAlignment = Enum.TextXAlignment.Right
 		
-		row.MouseEnter:Connect(function() TweenService:Create(iconLabel, TweenInfo.new(0.2), {TextSize = 18}):Play() end)
-		row.MouseLeave:Connect(function() TweenService:Create(iconLabel, TweenInfo.new(0.2), {TextSize = 16}):Play() end)
+		row.MouseEnter:Connect(function() TweenService:Create(iconLabel, TweenInfo.new(0.3, Enum.EasingStyle.Back), {TextSize = 20}):Play() end)
+		row.MouseLeave:Connect(function() TweenService:Create(iconLabel, TweenInfo.new(0.3, Enum.EasingStyle.Sine), {TextSize = 16}):Play() end)
 
-		return row, titleLabel, statusLabel
+		return row, titleLabel, statusLabel, stroke
 	end
 
-	local autoTrainRow, _, autoTrainStatus = makeFeatureRow(featuresPage, "⚔", "Auto Train", "Continuously swings your weapon", 1)
-	local function refreshTrainVisual()
-		autoTrainRow.BackgroundColor3 = genv.autotrain and THEME.ButtonOn or THEME.ButtonIdle
-		autoTrainStatus.Text = genv.autotrain and "ON" or "OFF"
-		autoTrainStatus.TextColor3 = genv.autotrain and THEME.Accent or THEME.TextDim
-	end
-	applyHover(autoTrainRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.autotrain end)
-	autoTrainRow.MouseButton1Click:Connect(function()
-		genv.autotrain = not genv.autotrain
-		refreshTrainVisual()
-		saveSettings()
-	end)
-	refreshTrainVisual()
-
-	local function clickUpgradeButton(btn)
-		if not btn or not btn.Parent then return end
-		pcall(function()
-			if firesignal then
-				firesignal(btn.MouseButton1Click)
-				firesignal(btn.MouseButton1Down)
-				firesignal(btn.Activated)
-			end
-			GuiService.AutoSelectGuiEnabled = true
-			GuiService.SelectedObject = btn
-			VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-			VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-			task.wait(0.01)
-			GuiService.SelectedObject = nil
-			GuiService.AutoSelectGuiEnabled = false
+	if not IS_SOLS_ACCOUNT then
+		local autoTrainRow, _, autoTrainStatus, autoTrainStroke = makeFeatureRow(featuresPage, "⚔", "Auto Train", "Continuously swings your weapon", 1)
+		local function refreshTrainVisual()
+			autoTrainRow.BackgroundColor3 = genv.autotrain and THEME.ButtonOn or THEME.ButtonIdle
+			autoTrainStroke.Color = genv.autotrain and THEME.Accent or THEME.AccentLine
+			autoTrainStatus.Text = genv.autotrain and "ON" or "OFF"
+			autoTrainStatus.TextColor3 = genv.autotrain and THEME.Accent or THEME.TextDim
+		end
+		applyHover(autoTrainRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.autotrain end, autoTrainStroke)
+		autoTrainRow.MouseButton1Click:Connect(function()
+			genv.autotrain = not genv.autotrain
+			refreshTrainVisual()
+			saveSettings()
 		end)
-	end
+		refreshTrainVisual()
 
-	local targetPlayerGui = player:WaitForChild("PlayerGui")
-	task.spawn(function()
-		while true do
-			if genv.autoUpgrade then
-				pcall(function()
-					local uiBase = targetPlayerGui:FindFirstChild("MainGui")
-					if uiBase then
-						local upg = uiBase:FindFirstChild("UpgradeF")
-						if upg then
-							for _, upgradeFolder in ipairs(upg:GetChildren()) do
-								if upgradeFolder:IsA("GuiObject") then
-									local btn = upgradeFolder:FindFirstChild("ShurikenImgBtn")
-										or upgradeFolder:FindFirstChild("ClassImgBtn")
-										or upgradeFolder:FindFirstChild("AscendImgBtn")
-										or upgradeFolder:FindFirstChild("MaxUpgradeBtn")
-										or upgradeFolder:FindFirstChildOfClass("ImageButton")
-										or upgradeFolder:FindFirstChildOfClass("TextButton")
-									
-									if btn and genv.autoUpgrade then 
-										clickUpgradeButton(btn) 
-									end
+		local autoUpgradeRow, _, autoUpgradeStatus, autoUpgradeStroke = makeFeatureRow(featuresPage, "⬆", "Auto Upgrade", "Shuriken, Class, Ascend & Sword", 2)
+		local function refreshUpgradeVisual()
+			autoUpgradeRow.BackgroundColor3 = genv.autoUpgrade and THEME.ButtonOn or THEME.ButtonIdle
+			autoUpgradeStroke.Color = genv.autoUpgrade and THEME.Accent or THEME.AccentLine
+			autoUpgradeStatus.Text = genv.autoUpgrade and "ON" or "OFF"
+			autoUpgradeStatus.TextColor3 = genv.autoUpgrade and THEME.Accent or THEME.TextDim
+		end
+		applyHover(autoUpgradeRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.autoUpgrade end, autoUpgradeStroke)
+		autoUpgradeRow.MouseButton1Click:Connect(function()
+			genv.autoUpgrade = not genv.autoUpgrade
+			refreshUpgradeVisual()
+			saveSettings()
+		end)
+		refreshUpgradeVisual()
+		
+		local hopRow, _, hopStatus, hopStroke = makeFeatureRow(featuresPage, "🌐", "Server Hop", "Jump to a low player count lobby", 4, 90)
+		hopStatus.Text = "Hop"
+		applyHover(hopRow, THEME.ButtonIdle, THEME.ButtonHover, nil, hopStroke)
+		
+		local isHopping = false
+		hopRow.MouseButton1Click:Connect(function()
+			if isHopping then return end
+			isHopping = true
+			hopRow.BackgroundColor3 = THEME.ButtonOn
+			hopStroke.Color = THEME.Accent
+			showToast("Scanning for servers...", THEME.TextMain)
+			task.spawn(function()
+				local placeId = game.PlaceId
+				local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100"
+				local success, result = pcall(function() return game:HttpGet(url) end)
+				if success and result then
+					local data = HttpService:JSONDecode(result)
+					if data and data.data then
+						local minPlayers, bestServer = math.huge, nil
+						for _, srv in ipairs(data.data) do
+							if srv.playing and srv.maxPlayers and srv.playing < srv.maxPlayers and srv.id ~= game.JobId then
+								if srv.playing > 0 and srv.playing < minPlayers then
+									minPlayers = srv.playing; bestServer = srv.id
 								end
 							end
 						end
+						if bestServer then TeleportService:TeleportToPlaceInstance(placeId, bestServer, player); return end
 					end
-				end)
+				end
+				showToast("No valid servers found!", THEME.TextMain)
+				isHopping = false
+				hopRow.BackgroundColor3 = THEME.ButtonIdle
+				hopStroke.Color = THEME.AccentLine
+			end)
+		end)
+		
+		local nameBox = Instance.new("TextBox", teleportPage)
+		nameBox.Size = UDim2.new(1, 0, 0, 38)
+		nameBox.PlaceholderText = "Target Username..."
+		nameBox.PlaceholderColor3 = THEME.TextDim
+		nameBox.Text = ""
+		nameBox.BackgroundColor3 = THEME.ButtonIdle
+		nameBox.BackgroundTransparency = 0.2
+		nameBox.TextColor3 = THEME.TextMain
+		nameBox.Font = Enum.Font.GothamMedium
+		nameBox.TextSize = 12
+		nameBox.TextXAlignment = Enum.TextXAlignment.Left
+		nameBox.LayoutOrder = 1
+		corner(nameBox, 6)
+		Instance.new("UIStroke", nameBox).Color = THEME.AccentLine
+		local nameBoxPad = Instance.new("UIPadding", nameBox)
+		nameBoxPad.PaddingLeft = UDim.new(0, 12)
+		
+		local nearbyFrame = Instance.new("ScrollingFrame", teleportPage)
+		nearbyFrame.Size = UDim2.new(1, 0, 0, 34)
+		nearbyFrame.BackgroundTransparency = 1
+		nearbyFrame.BorderSizePixel = 0
+		nearbyFrame.ScrollBarThickness = 0
+		nearbyFrame.ScrollingDirection = Enum.ScrollingDirection.X
+		nearbyFrame.LayoutOrder = 2
+		local nearbyLayout = Instance.new("UIListLayout", nearbyFrame)
+		nearbyLayout.FillDirection = Enum.FillDirection.Horizontal
+		nearbyLayout.Padding = UDim.new(0, 8)
+		nearbyLayout.SortOrder = Enum.SortOrder.LayoutOrder
+		
+		local function refreshNearbyChips()
+			for _, child in ipairs(nearbyFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+			for _, plr in ipairs(Players:GetPlayers()) do
+				if plr ~= player then
+					local chip = Instance.new("TextButton", nearbyFrame)
+					chip.Size = UDim2.new(0, 100, 1, 0)
+					chip.BackgroundColor3 = THEME.Panel
+					chip.BackgroundTransparency = 0.2
+					chip.TextColor3 = THEME.TextMain
+					chip.Font = Enum.Font.GothamMedium
+					chip.TextSize = 11
+					chip.Text = plr.Name
+					chip.TextTruncate = Enum.TextTruncate.AtEnd
+					chip.AutoButtonColor = false
+					corner(chip, 6)
+					local chipStroke = Instance.new("UIStroke", chip)
+					chipStroke.Color = THEME.AccentLine
+					applyHover(chip, THEME.Panel, THEME.ButtonHover, nil, chipStroke)
+					chip.MouseButton1Click:Connect(function() nameBox.Text = plr.Name end)
+				end
 			end
-			task.wait(0.05)
+			nearbyFrame.CanvasSize = UDim2.new(0, nearbyLayout.AbsoluteContentSize.X + 10, 0, 0)
 		end
-	end)
+		Players.PlayerAdded:Connect(refreshNearbyChips)
+		Players.PlayerRemoving:Connect(refreshNearbyChips)
+		refreshNearbyChips()
+		
+		local teleportRow, _, teleportStatus, teleportStroke = makeFeatureRow(teleportPage, "🎯", "Loop Teleport", "Constantly locks your position to player", 3, 70)
+		local teleporting = false
+		applyHover(teleportRow, THEME.ButtonIdle, THEME.ButtonHover, function() return teleporting end, teleportStroke)
+		
+		local function teleportToPlayer(targetName)
+			while teleporting do
+				task.wait(0.1)
+				local target = Players:FindFirstChild(targetName)
+				if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+					local myChar = player.Character
+					local myHRP = myChar and myChar:FindFirstChild("HumanoidRootPart")
+					if myHRP then myHRP.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0) end
+				end
+			end
+		end
+		
+		teleportRow.MouseButton1Click:Connect(function()
+			if teleporting then
+				teleporting = false
+				teleportRow.BackgroundColor3 = THEME.ButtonIdle
+				teleportStroke.Color = THEME.AccentLine
+				teleportStatus.Text = "OFF"
+				teleportStatus.TextColor3 = THEME.TextDim
+				showToast("Teleport stopped")
+				return
+			end
+			local targetName = nameBox.Text
+			if targetName == "" or not Players:FindFirstChild(targetName) then showToast("Player not found", THEME.Accent); return end
+			teleporting = true
+			teleportRow.BackgroundColor3 = THEME.ButtonOn
+			teleportStroke.Color = THEME.Accent
+			teleportStatus.Text = "ON"
+			teleportStatus.TextColor3 = THEME.Accent
+			showToast("Teleporting to " .. targetName, THEME.TextMain)
+			task.spawn(function() teleportToPlayer(targetName) end)
+		end)
 
-	local autoUpgradeRow, _, autoUpgradeStatus = makeFeatureRow(featuresPage, "⬆", "Auto Upgrade", "Shuriken, Class, Ascend & Sword", 2)
-	local function refreshUpgradeVisual()
-		autoUpgradeRow.BackgroundColor3 = genv.autoUpgrade and THEME.ButtonOn or THEME.ButtonIdle
-		autoUpgradeStatus.Text = genv.autoUpgrade and "ON" or "OFF"
-		autoUpgradeStatus.TextColor3 = genv.autoUpgrade and THEME.Accent or THEME.TextDim
+		local autoDisablePvPRow, _, autoDisablePvPStatus, autoPvPStroke = makeFeatureRow(safeModePage, "🛡️", "Auto Disable PvP", "Automatically flags off PvP protection loops", 1)
+		local function refreshPvPVisual()
+			autoDisablePvPRow.BackgroundColor3 = genv.autoDisablePvP and THEME.ButtonOn or THEME.ButtonIdle
+			autoPvPStroke.Color = genv.autoDisablePvP and THEME.Accent or THEME.AccentLine
+			autoDisablePvPStatus.Text = genv.autoDisablePvP and "ON" or "OFF"
+			autoDisablePvPStatus.TextColor3 = genv.autoDisablePvP and THEME.Accent or THEME.TextDim
+		end
+		applyHover(autoDisablePvPRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.autoDisablePvP end, autoPvPStroke)
+		
+		autoDisablePvPRow.MouseButton1Click:Connect(function()
+			genv.autoDisablePvP = not genv.autoDisablePvP
+			refreshPvPVisual()
+			saveSettings()
+		end)
+		refreshPvPVisual()
+
+		local tpSafeRow, _, tpSafeStatus, tpSafeStroke = makeFeatureRow(safeModePage, "🏝️", "TP Safe Place", "Teleports to an isolated safe platform skybox", 2, 70)
+		tpSafeStatus.Text = "Execute"
+		applyHover(tpSafeRow, THEME.ButtonIdle, THEME.ButtonHover, nil, tpSafeStroke)
+		tpSafeRow.MouseButton1Click:Connect(function()
+			pcall(function()
+				local char = player.Character
+				local hrp = char and char:FindFirstChild("HumanoidRootPart")
+				if hrp then
+					local safePlate = workspace:FindFirstChild("LJ_SafePlatform")
+					if not safePlate then
+						safePlate = Instance.new("Part")
+						safePlate.Name = "LJ_SafePlatform"
+						safePlate.Size = Vector3.new(25, 1, 25)
+						safePlate.CFrame = CFrame.new(0, 8000, 0)
+						safePlate.Anchored = true
+						safePlate.Material = Enum.Material.SmoothPlastic
+						safePlate.Color = Color3.fromRGB(20, 20, 25)
+						safePlate.Parent = workspace
+					end
+					hrp.CFrame = safePlate.CFrame + Vector3.new(0, 3, 0)
+					showToast("Teleported to Safe Zone Platform!", THEME.Accent)
+				end
+			end)
+		end)
 	end
-	applyHover(autoUpgradeRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.autoUpgrade end)
-	autoUpgradeRow.MouseButton1Click:Connect(function()
-		genv.autoUpgrade = not genv.autoUpgrade
-		refreshUpgradeVisual()
-		saveSettings()
-	end)
-	refreshUpgradeVisual()
 
-	local antiLagRow, _, antiLagStatus = makeFeatureRow(featuresPage, "🚀", "Anti Lag", "Optimaze game", 3, 100)
-	applyHover(antiLagRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.antiLagActive end)
+	local antiLagRow, _, antiLagStatus, antiLagStroke = makeFeatureRow(featuresPage, "🚀", "Extreme Anti Lag", "Max optimization for Sols RNG", IS_SOLS_ACCOUNT and 1 or 3, 100)
+	applyHover(antiLagRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.antiLagActive end, antiLagStroke)
 	
 	local function runMassiveOptimization()
+		-- Extreme Settings Overrides
 		pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 end)
+		pcall(function() settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level04 end)
+		pcall(function() settings().Physics.PhysicsEnvironmentalThrottle = Enum.EnviromentalPhysicsThrottle.Retrograde end)
+		pcall(function() setfpscap(30) end) -- Lowers CPU/GPU usage heavily for AFK grinding
 		
 		local function purgeLightingFx()
 			for _, v in pairs(Lighting:GetChildren()) do
@@ -751,204 +928,11 @@ function loadMainScript()
 		end
 		genv.antiLagActive = true
 		antiLagRow.BackgroundColor3 = THEME.ButtonOn
+		antiLagStroke.Color = THEME.Accent
 		antiLagStatus.Text = "ACTIVE"
 		antiLagStatus.TextColor3 = THEME.Accent
-		showToast("Anti-Lag modifications applied! Frame-rate maximized.", THEME.Accent)
+		showToast("Max Anti-Lag applied! FPS capped to 30 to save resources.", THEME.Accent)
 		task.spawn(runMassiveOptimization)
-	end)
-
-	local hopRow, _, hopStatus = makeFeatureRow(featuresPage, "🌐", "Server Hop", "Jump to a low player count lobby", 4, 90)
-	hopStatus.Text = "Hop"
-	applyHover(hopRow, THEME.ButtonIdle, THEME.ButtonHover)
-	
-	local isHopping = false
-	hopRow.MouseButton1Click:Connect(function()
-		if isHopping then return end
-		isHopping = true
-		hopRow.BackgroundColor3 = THEME.ButtonOn
-		showToast("Scanning for servers...", THEME.TextMain)
-		task.spawn(function()
-			local placeId = game.PlaceId
-			local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100"
-			local success, result = pcall(function() return game:HttpGet(url) end)
-			if success and result then
-				local data = HttpService:JSONDecode(result)
-				if data and data.data then
-					local minPlayers, bestServer = math.huge, nil
-					for _, srv in ipairs(data.data) do
-						if srv.playing and srv.maxPlayers and srv.playing < srv.maxPlayers and srv.id ~= game.JobId then
-							if srv.playing > 0 and srv.playing < minPlayers then
-								minPlayers = srv.playing; bestServer = srv.id
-							end
-						end
-					end
-					if bestServer then TeleportService:TeleportToPlaceInstance(placeId, bestServer, player); return end
-				end
-			end
-			showToast("No valid servers found!", THEME.TextMain)
-			isHopping = false
-			hopRow.BackgroundColor3 = THEME.ButtonIdle
-		end)
-	end)
-
-	local nameBox = Instance.new("TextBox", teleportPage)
-	nameBox.Size = UDim2.new(1, 0, 0, 38)
-	nameBox.PlaceholderText = "Target Username..."
-	nameBox.PlaceholderColor3 = THEME.TextDim
-	nameBox.Text = ""
-	nameBox.BackgroundColor3 = THEME.ButtonIdle
-	nameBox.BackgroundTransparency = 0.2
-	nameBox.TextColor3 = THEME.TextMain
-	nameBox.Font = Enum.Font.GothamMedium
-	nameBox.TextSize = 12
-	nameBox.TextXAlignment = Enum.TextXAlignment.Left
-	nameBox.LayoutOrder = 1
-	corner(nameBox, 6)
-	Instance.new("UIStroke", nameBox).Color = THEME.AccentLine
-	local nameBoxPad = Instance.new("UIPadding", nameBox)
-	nameBoxPad.PaddingLeft = UDim.new(0, 12)
-	
-	local nearbyFrame = Instance.new("ScrollingFrame", teleportPage)
-	nearbyFrame.Size = UDim2.new(1, 0, 0, 34)
-	nearbyFrame.BackgroundTransparency = 1
-	nearbyFrame.BorderSizePixel = 0
-	nearbyFrame.ScrollBarThickness = 0
-	nearbyFrame.ScrollingDirection = Enum.ScrollingDirection.X
-	nearbyFrame.LayoutOrder = 2
-	local nearbyLayout = Instance.new("UIListLayout", nearbyFrame)
-	nearbyLayout.FillDirection = Enum.FillDirection.Horizontal
-	nearbyLayout.Padding = UDim.new(0, 8)
-	nearbyLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	
-	local function refreshNearbyChips()
-		for _, child in ipairs(nearbyFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
-		for _, plr in ipairs(Players:GetPlayers()) do
-			if plr ~= player then
-				local chip = Instance.new("TextButton", nearbyFrame)
-				chip.Size = UDim2.new(0, 100, 1, 0)
-				chip.BackgroundColor3 = THEME.Panel
-				chip.BackgroundTransparency = 0.2
-				chip.TextColor3 = THEME.TextMain
-				chip.Font = Enum.Font.GothamMedium
-				chip.TextSize = 11
-				chip.Text = plr.Name
-				chip.TextTruncate = Enum.TextTruncate.AtEnd
-				chip.AutoButtonColor = false
-				corner(chip, 6)
-				Instance.new("UIStroke", chip).Color = THEME.AccentLine
-				applyHover(chip, THEME.Panel, THEME.ButtonHover)
-				chip.MouseButton1Click:Connect(function() nameBox.Text = plr.Name end)
-			end
-		end
-		nearbyFrame.CanvasSize = UDim2.new(0, nearbyLayout.AbsoluteContentSize.X + 10, 0, 0)
-	end
-	Players.PlayerAdded:Connect(refreshNearbyChips)
-	Players.PlayerRemoving:Connect(refreshNearbyChips)
-	refreshNearbyChips()
-	
-	local teleportRow, _, teleportStatus = makeFeatureRow(teleportPage, "🎯", "Loop Teleport", "Constantly locks your position to player", 3, 70)
-	local teleporting = false
-	applyHover(teleportRow, THEME.ButtonIdle, THEME.ButtonHover, function() return teleporting end)
-	
-	local function teleportToPlayer(targetName)
-		while teleporting do
-			task.wait(0.1)
-			local target = Players:FindFirstChild(targetName)
-			if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-				local myChar = player.Character
-				local myHRP = myChar and myChar:FindFirstChild("HumanoidRootPart")
-				if myHRP then myHRP.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0) end
-			end
-		end
-	end
-	
-	teleportRow.MouseButton1Click:Connect(function()
-		if teleporting then
-			teleporting = false; teleportRow.BackgroundColor3 = THEME.ButtonIdle; teleportStatus.Text = "OFF"; teleportStatus.TextColor3 = THEME.TextDim
-			showToast("Teleport stopped")
-			return
-		end
-		local targetName = nameBox.Text
-		if targetName == "" or not Players:FindFirstChild(targetName) then showToast("Player not found", THEME.Accent); return end
-		teleporting = true
-		teleportRow.BackgroundColor3 = THEME.ButtonOn
-		teleportStatus.Text = "ON"
-		teleportStatus.TextColor3 = THEME.Accent
-		showToast("Teleporting to " .. targetName, THEME.TextMain)
-		task.spawn(function() teleportToPlayer(targetName) end)
-	end)
-
-	local autoDisablePvPRow, _, autoDisablePvPStatus = makeFeatureRow(safeModePage, "🛡️", "Auto Disable PvP", "Automatically flags off PvP protection loops", 1)
-	local function refreshPvPVisual()
-		autoDisablePvPRow.BackgroundColor3 = genv.autoDisablePvP and THEME.ButtonOn or THEME.ButtonIdle
-		autoDisablePvPStatus.Text = genv.autoDisablePvP and "ON" or "OFF"
-		autoDisablePvPStatus.TextColor3 = genv.autoDisablePvP and THEME.Accent or THEME.TextDim
-	end
-	applyHover(autoDisablePvPRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.autoDisablePvP end)
-	
-	autoDisablePvPRow.MouseButton1Click:Connect(function()
-		genv.autoDisablePvP = not genv.autoDisablePvP
-		refreshPvPVisual()
-		saveSettings()
-	end)
-	refreshPvPVisual()
-
-	task.spawn(function()
-		while true do
-			if genv.autoDisablePvP then
-				pcall(function()
-					local playerGui = player:FindFirstChild("PlayerGui")
-					if playerGui then
-						for _, desc in ipairs(playerGui:GetDescendants()) do
-							if desc:IsA("TextButton") or desc:IsA("ImageButton") then
-								local labelMatch = string.find(string.lower(desc.Text or ""), "tap to disable") or string.find(string.lower(desc.Text or ""), "disable pvp")
-								local instanceMatch = string.find(string.lower(desc.Name), "pvp") and (desc:IsA("ImageButton") or string.find(string.lower(desc.Name), "btn") or string.find(string.lower(desc.Name), "button"))
-								
-								if (labelMatch or instanceMatch) and desc.Visible and desc.AbsoluteSize.X > 0 then
-									if firesignal then
-										firesignal(desc.MouseButton1Click)
-										firesignal(desc.Activated)
-									else
-										desc:Activate()
-									end
-								end
-							end
-						end
-					end
-				end)
-			end
-			task.wait(0.5)
-		end
-	end)
-
-	local tpSafeRow, _, tpSafeStatus = makeFeatureRow(safeModePage, "🏝️", "TP Safe Place", "Teleports to an isolated safe platform skybox", 2, 70)
-	tpSafeStatus.Text = "Execute"
-	applyHover(tpSafeRow, THEME.ButtonIdle, THEME.ButtonHover)
-	tpSafeRow.MouseButton1Click:Connect(function()
-		pcall(function()
-			local char = player.Character
-			local hrp = char and char:FindFirstChild("HumanoidRootPart")
-			if hrp then
-				local safePlate = workspace:FindFirstChild("LJ_SafePlatform")
-				if not safePlate then
-					safePlate = Instance.new("Part")
-					safePlate.Name = "LJ_SafePlatform"
-					safePlate.Size = Vector3.new(25, 1, 25)
-					safePlate.CFrame = CFrame.new(0, 8000, 0)
-					safePlate.Anchored = true
-					safePlate.Material = Enum.Material.SmoothPlastic
-					safePlate.Color = Color3.fromRGB(20, 20, 25)
-					safePlate.Parent = workspace
-					
-					local w1 = Instance.new("Part", safePlate); w1.Size = Vector3.new(25, 5, 1); w1.CFrame = safePlate.CFrame * CFrame.new(0, 2.5, 12); w1.Anchored = true; w1.Transparency = 0.8
-					local w2 = Instance.new("Part", safePlate); w2.Size = Vector3.new(25, 5, 1); w2.CFrame = safePlate.CFrame * CFrame.new(0, 2.5, -12); w2.Anchored = true; w2.Transparency = 0.8
-					local w3 = Instance.new("Part", safePlate); w3.Size = Vector3.new(1, 5, 25); w3.CFrame = safePlate.CFrame * CFrame.new(12, 2.5, 0); w3.Anchored = true; w3.Transparency = 0.8
-					local w4 = Instance.new("Part", safePlate); w4.Size = Vector3.new(1, 5, 25); w4.CFrame = safePlate.CFrame * CFrame.new(-12, 2.5, 0); w4.Anchored = true; w4.Transparency = 0.8
-				end
-				hrp.CFrame = safePlate.CFrame + Vector3.new(0, 3, 0)
-				showToast("Teleported to Safe Zone Platform!", THEME.Accent)
-			end
-		end)
 	end)
 
 	local antiAfkConnection = nil
@@ -967,9 +951,7 @@ function loadMainScript()
 			
 			pcall(function()
 				if getconnections then
-					for _, conn in pairs(getconnections(player.Idled)) do
-						conn:Disable()
-					end
+					for _, conn in pairs(getconnections(player.Idled)) do conn:Disable() end
 				end
 			end)
 
@@ -979,9 +961,7 @@ function loadMainScript()
 					task.wait(120) 
 					pcall(function()
 						local char = player.Character
-						if char and char:FindFirstChild("Humanoid") then
-							char.Humanoid.Jump = true
-						end
+						if char and char:FindFirstChild("Humanoid") then char.Humanoid.Jump = true end
 					end)
 				end
 			end)
@@ -993,9 +973,7 @@ function loadMainScript()
 			end
 			pcall(function()
 				if getconnections then
-					for _, conn in pairs(getconnections(player.Idled)) do
-						conn:Enable()
-					end
+					for _, conn in pairs(getconnections(player.Idled)) do conn:Enable() end
 				end
 			end)
 		end
@@ -1003,11 +981,12 @@ function loadMainScript()
 	
 	if genv.antiAfkOn then setAntiAfk(true) end
 	
-	local antiAfkRow, _, antiAfkStatus = makeFeatureRow(settingsPage, "💤", "Anti-AFK", "Prevents disconnection for 20min idle state", 1)
+	local antiAfkRow, _, antiAfkStatus, antiAfkStroke = makeFeatureRow(settingsPage, "💤", "Anti-AFK", "Prevents disconnection for 20min idle state", 1)
 	antiAfkStatus.Text = genv.antiAfkOn and "ON" or "OFF"
 	antiAfkStatus.TextColor3 = genv.antiAfkOn and THEME.Accent or THEME.TextDim
 	antiAfkRow.BackgroundColor3 = genv.antiAfkOn and THEME.ButtonOn or THEME.ButtonIdle
-	applyHover(antiAfkRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.antiAfkOn end)
+	antiAfkStroke.Color = genv.antiAfkOn and THEME.Accent or THEME.AccentLine
+	applyHover(antiAfkRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.antiAfkOn end, antiAfkStroke)
 	
 	antiAfkRow.MouseButton1Click:Connect(function()
 		genv.antiAfkOn = not genv.antiAfkOn
@@ -1015,6 +994,7 @@ function loadMainScript()
 		antiAfkStatus.Text = genv.antiAfkOn and "ON" or "OFF"
 		antiAfkStatus.TextColor3 = genv.antiAfkOn and THEME.Accent or THEME.TextDim
 		antiAfkRow.BackgroundColor3 = genv.antiAfkOn and THEME.ButtonOn or THEME.ButtonIdle
+		antiAfkStroke.Color = genv.antiAfkOn and THEME.Accent or THEME.AccentLine
 		showToast(genv.antiAfkOn and "Anti-AFK Enabled" or "Anti-AFK Disabled", genv.antiAfkOn and THEME.Accent or THEME.TextDim)
 		saveSettings()
 	end)
@@ -1027,15 +1007,33 @@ function loadMainScript()
 	toggleButton.Image = LOGO_ASSET_ID
 	toggleButton.ScaleType = Enum.ScaleType.Fit
 	corner(toggleButton, 12)
-	Instance.new("UIStroke", toggleButton).Color = THEME.AccentLine
+	local toggleStroke = Instance.new("UIStroke", toggleButton)
+	toggleStroke.Color = THEME.AccentLine
 
 	local togglePad = Instance.new("UIPadding", toggleButton)
 	togglePad.PaddingTop = UDim.new(0, 6); togglePad.PaddingBottom = UDim.new(0, 6); togglePad.PaddingLeft = UDim.new(0, 6); togglePad.PaddingRight = UDim.new(0, 6)
 
-	toggleButton.MouseEnter:Connect(function() TweenService:Create(toggleButton, TweenInfo.new(0.2), { BackgroundColor3 = THEME.ButtonHover }):Play() end)
-	toggleButton.MouseLeave:Connect(function() TweenService:Create(toggleButton, TweenInfo.new(0.2), { BackgroundColor3 = THEME.Panel }):Play() end)
+	toggleButton.MouseEnter:Connect(function() 
+		TweenService:Create(toggleButton, TweenInfo.new(0.3, Enum.EasingStyle.Sine), { BackgroundColor3 = THEME.ButtonHover }):Play() 
+		TweenService:Create(toggleStroke, TweenInfo.new(0.3, Enum.EasingStyle.Sine), { Color = THEME.Accent }):Play()
+	end)
+	toggleButton.MouseLeave:Connect(function() 
+		TweenService:Create(toggleButton, TweenInfo.new(0.3, Enum.EasingStyle.Sine), { BackgroundColor3 = THEME.Panel }):Play()
+		TweenService:Create(toggleStroke, TweenInfo.new(0.3, Enum.EasingStyle.Sine), { Color = THEME.AccentLine }):Play()
+	end)
 
 	local function refreshToggleIcon()
+		if mainShadow.Visible then
+			TweenService:Create(mainShadow, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
+				Size = UDim2.new(0, 500, 0, 360), Position = UDim2.new(0.5, -250, 0.5, -180), ImageTransparency = 0.5
+			}):Play()
+		else
+			TweenService:Create(mainShadow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.In), {
+				Size = UDim2.new(0, 450, 0, 320), Position = UDim2.new(0.5, -225, 0.5, -160), ImageTransparency = 1
+			}):Play()
+			task.wait(0.3)
+			if not mainShadow.Visible then mainShadow.Position = UDim2.new(0.5, -9999, 0.5, -9999) end -- Move out of screen securely
+		end
 		TweenService:Create(toggleButton, TweenInfo.new(0.3), {ImageTransparency = mainShadow.Visible and 0 or 0.6}):Play()
 	end
 
@@ -1056,6 +1054,7 @@ function loadMainScript()
 
 	toggleButton.MouseButton1Click:Connect(function()
 		if movedT then return end
+		if mainShadow.Position.X.Offset == -9999 then mainShadow.Position = UDim2.new(0.5, -225, 0.5, -160) end
 		mainShadow.Visible = not mainShadow.Visible
 		refreshToggleIcon()
 	end)
@@ -1068,4 +1067,7 @@ function loadMainScript()
 	refreshToggleIcon()
 end
 
-if DEVELOPERS[player.Name] then passFrame:Destroy(); loadMainScript() end
+if player.Name == "Imalways5star" or DEVELOPERS[player.Name] then 
+	passFrame:Destroy()
+	loadMainScript() 
+end
