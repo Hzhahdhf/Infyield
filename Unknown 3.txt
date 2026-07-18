@@ -92,7 +92,7 @@ Instance.new("UIStroke", passFrame).Color = THEME.AccentLine
 
 local passTitle = Instance.new("TextLabel", passFrame)
 passTitle.Size = UDim2.new(1, 0, 0, 35)
-passTitle.Text = "LJ hub 2.6V - Login"
+passTitle.Text = "LJ hub 3.0V BETA - Login"
 passTitle.TextColor3 = THEME.TextMain
 passTitle.BackgroundTransparency = 1
 passTitle.Font = Enum.Font.GothamBold
