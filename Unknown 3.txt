@@ -77,7 +77,7 @@ local existingGui = player:WaitForChild("PlayerGui"):FindFirstChild("LJ_Hub_V2_6
 if existingGui then existingGui:Destroy() end
 
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "LJ_Hub_V2_6"
+screenGui.Name = "LJ_Hub_V3.0V BETA"
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = player.PlayerGui
