@@ -1216,7 +1216,7 @@ function loadMainScript()
 		msg.Size = UDim2.new(1, -28, 0, 50)
 		msg.Position = UDim2.new(0, 16, 0, 10)
 		msg.BackgroundTransparency = 1
-		msg.Text = "Do you wana see script update log? Script has updated to 3.0V BETA For 2dr time."
+		msg.Text = "Do you wana see script update log? Script has updated to 3.0V BETA  
 		msg.TextColor3 = THEME.White
 		msg.Font = Enum.Font.GothamMedium
 		msg.TextSize = 11
