@@ -335,47 +335,48 @@ function loadMainScript()
 		pcall(function()
 			ReplicatedStorage["4fb5134c-2309-4a5a-91f0-061606bfd947"]:FireServer("SwordSlash", 286)
 		end)
-	end)
+		-- ── AUTO UPGRADE (GUI Clicker) ───────────────────────────
+	local GuiService = game:GetService("GuiService")
+	local VIM = game:GetService("VirtualInputManager")
 
-	-- ── AUTO UPGRADE ───────────────────────────
-	local UPGRADE_PATTERNS = {
-		"upgrade", "buyall", "buy_all", "class", "ascend", "realm",
-		"sword", "shuriken", "purchase", "level", "rank", "prestige",
-		"enhance", "skill", "weapon", "equip", "unlock"
+	local BUTTONS = {
+		function() return player.PlayerGui.MainGui.UpgradeF.ShurikenF.ShurikenImgBtn end,
+		function() return player.PlayerGui.MainGui.UpgradeF.ClassF.ClassImgBtn end,
+		function() return player.PlayerGui.MainGui.UpgradeF.AscendF.AscendImgBtn end,
+		function() return player.PlayerGui.MainGui.UpgradeF.SwordF.MaxUpgradeBtn end,
 	}
 
-	local function matchesUpgrade(name)
-		local low = name:lower()
-		for _, pat in ipairs(UPGRADE_PATTERNS) do
-			if low:find(pat) then return true end
-		end
-		return false
+	local function clickButton(btn)
+		pcall(function()
+			GuiService.AutoSelectGuiEnabled = true
+			GuiService.SelectedObject = btn
+			VIM:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+			VIM:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+			task.wait(0.1)
+			GuiService.SelectedObject = nil
+			GuiService.AutoSelectGuiEnabled = false
+		end)
 	end
 
 	task.spawn(function()
-		while task.wait(0.8) do
-			if not genv.autoUpgrade then continue end
-			pcall(function()
-				for _, remote in pairs(ReplicatedStorage:GetDescendants()) do
-					if not matchesUpgrade(remote.Name) then continue end
-					if remote:IsA("RemoteEvent") then
-						pcall(function() remote:FireServer() end)
-					elseif remote:IsA("RemoteFunction") then
-						pcall(function() remote:InvokeServer() end)
-					end
+		while true do
+			if genv.autoUpgrade then
+				for _, getBtn in ipairs(BUTTONS) do
+					pcall(function()
+						local btn = getBtn()
+						if btn then
+							clickButton(btn)
+						end
+					end)
+					task.wait(0.5)
 				end
-				for _, remote in pairs(workspace:GetDescendants()) do
-					if not matchesUpgrade(remote.Name) then continue end
-					if remote:IsA("RemoteEvent") then
-						pcall(function() remote:FireServer() end)
-					elseif remote:IsA("RemoteFunction") then
-						pcall(function() remote:InvokeServer() end)
-					end
-				end
-			end)
+			else
+				task.wait(0.5) -- Wait while the UI toggle is turned off
+			end
 		end
 	end)
 
+	
 	-- ═══════════════════════════════════════════════════════════════════════
 	--  MAIN UI
 	-- ═══════════════════════════════════════════════════════════════════════
