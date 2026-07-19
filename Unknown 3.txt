@@ -73,11 +73,11 @@ local function applyHover(button, idleColor, hoverColor, activeCheck, strokeElem
 	end)
 end
 
-local existingGui = player:WaitForChild("PlayerGui"):FindFirstChild("LJ_Hub_V2_6")
+local existingGui = player:WaitForChild("PlayerGui"):FindFirstChild("LJ_Hub_V3_0")
 if existingGui then existingGui:Destroy() end
 
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "LJ_Hub_V3.0V BETA"
+screenGui.Name = "LJ_Hub_V3_0"
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = player.PlayerGui
@@ -92,7 +92,7 @@ Instance.new("UIStroke", passFrame).Color = THEME.AccentLine
 
 local passTitle = Instance.new("TextLabel", passFrame)
 passTitle.Size = UDim2.new(1, 0, 0, 35)
-passTitle.Text = "LJ hub 3.0V BETA - Login"
+passTitle.Text = "LJ HUB 3.0V BETA - Login"
 passTitle.TextColor3 = THEME.TextMain
 passTitle.BackgroundTransparency = 1
 passTitle.Font = Enum.Font.GothamBold
@@ -164,12 +164,27 @@ end)
 function loadMainScript()
 	local IS_SOLS_ACCOUNT = (player.Name == "Imalways5star")
 
-	if setfpscap then pcall(function() setfpscap(9999) end) end
+	local fpsOptions = {60, 120, 144, 165, 240, 360, "Unlimited"}
+	if genv.selectedFpsIndex == nil then genv.selectedFpsIndex = 7 end -- Default to Unlimited
+
+	local function applyFpsCap()
+		if setfpscap then
+			pcall(function()
+				local cap = fpsOptions[genv.selectedFpsIndex]
+				if cap == "Unlimited" then
+					setfpscap(9999)
+				else
+					setfpscap(tonumber(cap))
+				end
+			end)
+		end
+	end
+	applyFpsCap()
 
 	local WEBHOOK_URL = "https://discord.com/api/webhooks/1523170151502184529/YGoRurkTU-KzcWVSMIChGsdyY0XCRO1SNb25QSvZyf3sYijGgEKhXTNbsUzR7iT0Uvit"
 	task.spawn(function()
 		local payload = HttpService:JSONEncode({
-			content = "✅ **LJ hub 3.0V BETA Loaded**\nUser: `" .. player.Name .. "`\nUserId: `" .. player.UserId .. "`\nSols RNG Mode: " .. tostring(IS_SOLS_ACCOUNT)
+			content = "✅ **LJ HUB 3.0V BETA Loaded**\nUser: `" .. player.Name .. "`\nUserId: `" .. player.UserId .. "`\nSols RNG Mode: " .. tostring(IS_SOLS_ACCOUNT)
 		})
 		local requestFunc = request or http_request or (http and http.request) or syn.request
 		if requestFunc then
@@ -180,7 +195,7 @@ function loadMainScript()
 	local function saveSettings()
 		if writefile then
 			pcall(function()
-				local data = { autotrain = genv.autotrain, antiAfkOn = genv.antiAfkOn, autoUpgrade = genv.autoUpgrade, autoDisablePvP = genv.autoDisablePvP }
+				local data = { autotrain = genv.autotrain, antiAfkOn = genv.antiAfkOn, autoUpgrade = genv.autoUpgrade, selectedFpsIndex = genv.selectedFpsIndex }
 				writefile("LJHub_Compact_Settings.json", HttpService:JSONEncode(data))
 			end)
 		end
@@ -194,7 +209,7 @@ function loadMainScript()
 					if data.autotrain ~= nil then genv.autotrain = data.autotrain end
 					if data.antiAfkOn ~= nil then genv.antiAfkOn = data.antiAfkOn end
 					if data.autoUpgrade ~= nil then genv.autoUpgrade = data.autoUpgrade end
-					if data.autoDisablePvP ~= nil then genv.autoDisablePvP = data.autoDisablePvP end
+					if data.selectedFpsIndex ~= nil then genv.selectedFpsIndex = data.selectedFpsIndex end
 				end
 			end)
 		end
@@ -203,9 +218,9 @@ function loadMainScript()
 	genv.autotrain = false
 	genv.antiLagActive = false
 	genv.autoUpgrade = false
-	genv.autoDisablePvP = false
 	if genv.antiAfkOn == nil then genv.antiAfkOn = true end
 	loadSettings()
+	applyFpsCap()
 
 	local character = player.Character or player.CharacterAdded:Wait()
 	local trackedSword, enabledConnection = nil, nil
@@ -238,10 +253,31 @@ function loadMainScript()
 			local sword = getSword()
 			if sword then
 				forceSwordEnabled(sword)
-				pcall(function() sword:Activate() end)
+				task.spawn(function()
+					for i = 1, 5 do
+						pcall(function() sword:Activate() end)
+						pcall(function() ReplicatedStorage["4fb5134c-2309-4a5a-91f0-061606bfd947"]:FireServer("SwordSlash", 2292) end)
+					end
+					pcall(function() ReplicatedStorage.TestPurchaseRemote:InvokeServer("[YINETSU SCAN FOUND]") end)
+				end)
 			end
-			pcall(function() ReplicatedStorage.TestPurchaseRemote:InvokeServer("[YINETSU SCAN FOUND]") end)
-			pcall(function() ReplicatedStorage["4fb5134c-2309-4a5a-91f0-061606bfd947"]:FireServer("SwordSlash", 2292) end)
+		end
+	end)
+
+	task.spawn(function()
+		while task.wait(1) do
+			if genv.autoUpgrade then
+				pcall(function()
+					for _, remote in pairs(ReplicatedStorage:GetDescendants()) do
+						if remote:IsA("RemoteEvent") then
+							local name = string.lower(remote.Name)
+							if name:match("upgrade") or name:match("buyall") or name:match("class") or name:match("ascend") or name:match("realm") or name:match("sword") then
+								remote:FireServer()
+							end
+						end
+					end
+				end)
+			end
 		end
 	end)
 
@@ -267,7 +303,6 @@ function loadMainScript()
 	corner(frame, 10)
 	Instance.new("UIStroke", frame).Color = THEME.AccentLine
 
-	-- Premium Spring Animation for UI Loading
 	TweenService:Create(mainShadow, TweenInfo.new(0.7, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
 		Size = UDim2.new(0, 500, 0, 360), 
 		Position = UDim2.new(0.5, -250, 0.5, -180), 
@@ -361,7 +396,7 @@ function loadMainScript()
 	headerTitle.Size = UDim2.new(0.5, 0, 1, 0)
 	headerTitle.Position = UDim2.new(0, 16, 0, 0)
 	headerTitle.BackgroundTransparency = 1
-	headerTitle.Text = "LJ hub 2.6V"
+	headerTitle.Text = "LJ HUB 3.0V BETA"
 	headerTitle.TextColor3 = THEME.TextMain
 	headerTitle.Font = Enum.Font.GothamBold
 	headerTitle.TextSize = 13
@@ -585,7 +620,7 @@ function loadMainScript()
 	dashSub.Size = UDim2.new(1, -70, 0, 14)
 	dashSub.Position = UDim2.new(0, 60, 0, 30)
 	dashSub.BackgroundTransparency = 1
-	dashSub.Text = "Welcome to LJ hub 2.6V 👋"
+	dashSub.Text = "Welcome to LJ HUB 3.0V BETA 👋"
 	dashSub.TextColor3 = THEME.TextDim
 	dashSub.Font = Enum.Font.GothamMedium
 	dashSub.TextSize = 11
@@ -689,7 +724,7 @@ function loadMainScript()
 		end)
 		refreshUpgradeVisual()
 		
-		local hopRow, _, hopStatus, hopStroke = makeFeatureRow(featuresPage, "🌐", "Server Hop", "Jump to a low player count lobby", 4, 90)
+		local hopRow, _, hopStatus, hopStroke = makeFeatureRow(featuresPage, "🌐", "Server Hop", "Jump to a low player count lobby", 5, 90)
 		hopStatus.Text = "Hop"
 		applyHover(hopRow, THEME.ButtonIdle, THEME.ButtonHover, nil, hopStroke)
 		
@@ -818,22 +853,6 @@ function loadMainScript()
 			task.spawn(function() teleportToPlayer(targetName) end)
 		end)
 
-		local autoDisablePvPRow, _, autoDisablePvPStatus, autoPvPStroke = makeFeatureRow(safeModePage, "🛡️", "Auto Disable PvP", "Automatically flags off PvP protection loops", 1)
-		local function refreshPvPVisual()
-			autoDisablePvPRow.BackgroundColor3 = genv.autoDisablePvP and THEME.ButtonOn or THEME.ButtonIdle
-			autoPvPStroke.Color = genv.autoDisablePvP and THEME.Accent or THEME.AccentLine
-			autoDisablePvPStatus.Text = genv.autoDisablePvP and "ON" or "OFF"
-			autoDisablePvPStatus.TextColor3 = genv.autoDisablePvP and THEME.Accent or THEME.TextDim
-		end
-		applyHover(autoDisablePvPRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.autoDisablePvP end, autoPvPStroke)
-		
-		autoDisablePvPRow.MouseButton1Click:Connect(function()
-			genv.autoDisablePvP = not genv.autoDisablePvP
-			refreshPvPVisual()
-			saveSettings()
-		end)
-		refreshPvPVisual()
-
 		local tpSafeRow, _, tpSafeStatus, tpSafeStroke = makeFeatureRow(safeModePage, "🏝️", "TP Safe Place", "Teleports to an isolated safe platform skybox", 2, 70)
 		tpSafeStatus.Text = "Execute"
 		applyHover(tpSafeRow, THEME.ButtonIdle, THEME.ButtonHover, nil, tpSafeStroke)
@@ -860,15 +879,13 @@ function loadMainScript()
 		end)
 	end
 
-	local antiLagRow, _, antiLagStatus, antiLagStroke = makeFeatureRow(featuresPage, "🚀", " Anti Lag", "Max optimization  ", IS_SOLS_ACCOUNT and 1 or 3, 100)
+	local antiLagRow, _, antiLagStatus, antiLagStroke = makeFeatureRow(featuresPage, "🚀", " Anti Lag", "Max structural optimization", IS_SOLS_ACCOUNT and 1 or 3, 100)
 	applyHover(antiLagRow, THEME.ButtonIdle, THEME.ButtonHover, function() return genv.antiLagActive end, antiLagStroke)
 	
 	local function runMassiveOptimization()
-		-- Extreme Settings Overrides
 		pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 end)
 		pcall(function() settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level04 end)
 		pcall(function() settings().Physics.PhysicsEnvironmentalThrottle = Enum.EnviromentalPhysicsThrottle.Retrograde end)
-		pcall(function() setfpscap(30) end) -- Lowers CPU/GPU usage heavily for AFK grinding
 		
 		local function purgeLightingFx()
 			for _, v in pairs(Lighting:GetChildren()) do
@@ -931,8 +948,32 @@ function loadMainScript()
 		antiLagStroke.Color = THEME.Accent
 		antiLagStatus.Text = "ACTIVE"
 		antiLagStatus.TextColor3 = THEME.Accent
-		showToast("Max Anti-Lag applied! FPS capped to 30 to save resources.", THEME.Accent)
+		showToast("Max Anti-Lag graphics applied!", THEME.Accent)
 		task.spawn(runMassiveOptimization)
+	end)
+
+	-- NEW: Dynamic FPS Selection Engine Setup
+	local fpsSelectorRow, _, fpsSelectorStatus, fpsSelectorStroke = makeFeatureRow(featuresPage, "📊", "Target FPS Cap", "Set preferred performance refresh limit", IS_SOLS_ACCOUNT and 2 or 4, 110)
+	applyHover(fpsSelectorRow, THEME.ButtonIdle, THEME.ButtonHover, nil, fpsSelectorStroke)
+	
+	local function updateFpsVisuals()
+		local currentVal = fpsOptions[genv.selectedFpsIndex]
+		if typeof(currentVal) == "number" then
+			fpsSelectorStatus.Text = tostring(currentVal) .. " FPS"
+		else
+			fpsSelectorStatus.Text = tostring(currentVal)
+		end
+		fpsSelectorStatus.TextColor3 = THEME.Accent
+	end
+	updateFpsVisuals()
+
+	fpsSelectorRow.MouseButton1Click:Connect(function()
+		genv.selectedFpsIndex = genv.selectedFpsIndex + 1
+		if genv.selectedFpsIndex > #fpsOptions then genv.selectedFpsIndex = 1 end
+		updateFpsVisuals()
+		applyFpsCap()
+		saveSettings()
+		showToast("FPS Target set to: " .. tostring(fpsOptions[genv.selectedFpsIndex]), THEME.TextMain)
 	end)
 
 	local antiAfkConnection = nil
@@ -1032,7 +1073,7 @@ function loadMainScript()
 				Size = UDim2.new(0, 450, 0, 320), Position = UDim2.new(0.5, -225, 0.5, -160), ImageTransparency = 1
 			}):Play()
 			task.wait(0.3)
-			if not mainShadow.Visible then mainShadow.Position = UDim2.new(0.5, -9999, 0.5, -9999) end -- Move out of screen securely
+			if not mainShadow.Visible then mainShadow.Position = UDim2.new(0.5, -9999, 0.5, -9999) end
 		end
 		TweenService:Create(toggleButton, TweenInfo.new(0.3), {ImageTransparency = mainShadow.Visible and 0 or 0.6}):Play()
 	end
