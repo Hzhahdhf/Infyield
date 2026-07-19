@@ -1112,3 +1112,4 @@ if player.Name == "Imalways5star" or DEVELOPERS[player.Name] then
 	passFrame:Destroy()
 	loadMainScript() 
 end
+
