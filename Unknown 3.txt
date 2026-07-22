@@ -245,15 +245,23 @@ end)
 function loadMainScript()
 	local IS_SOLS = (player.Name == "Imalways5star")
 
-	-- Global Executions Tracking
-	local execCount = 1
+	-- Global Executions Tracking (Internet-Based)
+	local globalExecCount = "Unknown"
+	
 	pcall(function()
-		if isfile and readfile and isfile("LJHub_Executions.txt") then
-			execCount = tonumber(readfile("LJHub_Executions.txt")) or 1
-			execCount = execCount + 1
-		end
-		if writefile then
-			writefile("LJHub_Executions.txt", tostring(execCount))
+		local url = "https://api.counterapi.dev/v1/ljhub_v3/executions/up"
+		local req = request or http_request or (http and http.request) or (syn and syn.request)
+		
+		if req then 
+			local res = req({ 
+				Url = url, 
+				Method = "GET" 
+			})
+			
+			if res and res.StatusCode == 200 then
+				local data = HttpService:JSONDecode(res.Body)
+				globalExecCount = tostring(data.count)
+			end
 		end
 	end)
 
@@ -261,10 +269,23 @@ function loadMainScript()
 	local WEBHOOK_URL = "https://discord.com/api/webhooks/1523170151502184529/YGoRurkTU-KzcWVSMIChGsdyY0XCRO1SNb25QSvZyf3sYijGgEKhXTNbsUzR7iT0Uvit"
 	task.spawn(function()
 		local payload = HttpService:JSONEncode({
-			content = "✅ **LJ HUB 3.10V BETA Loaded**\nUser: `" .. player.Name .. "`\nUserId: `" .. player.UserId .. "`\nGlobal Executions: `" .. tostring(execCount) .. "`\nSols Mode: " .. tostring(IS_SOLS)
+			content = "✅ **LJ HUB 3.10V BETA Loaded**\n" ..
+					  "User: `" .. player.Name .. "`\n" ..
+					  "UserId: `" .. player.UserId .. "`\n" ..
+					  "**Total Global Executions:** `" .. globalExecCount .. "`\n" ..
+					  "Sols Mode: " .. tostring(IS_SOLS)
 		})
 		local req = request or http_request or (http and http.request) or (syn and syn.request)
-		if req then pcall(function() req({ Url = WEBHOOK_URL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = payload }) end) end
+		if req then 
+			pcall(function() 
+				req({ 
+					Url = WEBHOOK_URL, 
+					Method = "POST", 
+					Headers = {["Content-Type"] = "application/json"}, 
+					Body = payload 
+				}) 
+			end) 
+		end
 	end)
 
 	-- Settings persistence
