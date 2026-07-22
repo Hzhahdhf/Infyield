@@ -29,13 +29,13 @@ Players.PlayerAdded:Connect(checkAdmin)
 
 -- ── PREMIUM TRANSPARENT BLACK THEME ───────────────────────────────────────────
 local THEME = {
-	BG         = Color3.fromRGB(0, 0, 0),         -- Pure Black
-	Panel      = Color3.fromRGB(15, 15, 15),      -- Very Dark Gray
-	PanelAlt   = Color3.fromRGB(20, 20, 20),      -- Slightly lighter for contrast
-	Line       = Color3.fromRGB(45, 45, 45),      -- Subtle Borders
-	Accent     = Color3.fromRGB(220, 220, 220),   -- Premium Silver/White
-	AccentDim  = Color3.fromRGB(80, 80, 80),      -- Darker Silver
-	AccentGlow = Color3.fromRGB(255, 255, 255),   -- Bright White
+	BG         = Color3.fromRGB(0, 0, 0),         
+	Panel      = Color3.fromRGB(15, 15, 15),      
+	PanelAlt   = Color3.fromRGB(20, 20, 20),      
+	Line       = Color3.fromRGB(45, 45, 45),      
+	Accent     = Color3.fromRGB(220, 220, 220),   
+	AccentDim  = Color3.fromRGB(80, 80, 80),      
+	AccentGlow = Color3.fromRGB(255, 255, 255),   
 	BtnIdle    = Color3.fromRGB(10, 10, 10),
 	BtnHover   = Color3.fromRGB(25, 25, 25),
 	BtnOn      = Color3.fromRGB(40, 40, 40),
@@ -46,7 +46,7 @@ local THEME = {
 
 -- ── HELPERS ───────────────────────────────────────────────────────────────────
 local function corner(p, r)
-	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, r or 6); c.Parent = p; return c
+	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, r or 8); c.Parent = p; return c
 end
 
 local function stroke(p, col, thick)
@@ -85,16 +85,6 @@ local function glow(btn, glowColor)
 	return g
 end
 
-local function pulse(obj, prop, a, b, dur)
-	local function step()
-		tween(obj, dur or 1.2, { [prop] = b }, Enum.EasingStyle.Sine)
-		task.wait(dur or 1.2)
-		tween(obj, dur or 1.2, { [prop] = a }, Enum.EasingStyle.Sine)
-		task.wait(dur or 1.2)
-	end
-	task.spawn(function() while obj and obj.Parent do step() end end)
-end
-
 local function applyHover(btn, idle, hover, isOnFn, stk)
 	btn.MouseEnter:Connect(function()
 		if isOnFn and isOnFn() then return end
@@ -109,11 +99,11 @@ local function applyHover(btn, idle, hover, isOnFn, stk)
 end
 
 -- ── DESTROY EXISTING ─────────────────────────────────────────────────────────
-local existing = player:WaitForChild("PlayerGui"):FindFirstChild("LJ_Hub_V3_0")
+local existing = player:WaitForChild("PlayerGui"):FindFirstChild("LJ_Hub_V3_10")
 if existing then existing:Destroy() end
 
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "LJ_Hub_V3_0"
+screenGui.Name = "LJ_Hub_V3_10"
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -133,16 +123,14 @@ passFrame.Size = UDim2.new(0, 300, 0, 0)
 passFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 passFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 passFrame.BackgroundColor3 = THEME.BG
-passFrame.BackgroundTransparency = 0.3 -- Semi-transparent
+passFrame.BackgroundTransparency = 0.3 
 passFrame.ZIndex = 101
-corner(passFrame, 12)
+corner(passFrame, 14)
 local passFStroke = stroke(passFrame, THEME.Line)
 glow(passFrame, THEME.Accent)
 
--- Animate open
 tween(passFrame, 0.55, { Size = UDim2.new(0, 300, 0, 178) }, Enum.EasingStyle.Back)
 
--- Accent top bar
 local passAccBar = Instance.new("Frame", passFrame)
 passAccBar.Size = UDim2.new(1, 0, 0, 3)
 passAccBar.BackgroundColor3 = THEME.Accent
@@ -154,7 +142,7 @@ local passIcon = Instance.new("TextLabel", passFrame)
 passIcon.Size = UDim2.new(1, 0, 0, 32)
 passIcon.Position = UDim2.new(0, 0, 0, 12)
 passIcon.BackgroundTransparency = 1
-passIcon.Text = "🔐  LJ HUB 3.0V BETA"
+passIcon.Text = "🔐  LJ HUB 3.10V BETA"
 passIcon.TextColor3 = THEME.White
 passIcon.Font = Enum.Font.GothamBold
 passIcon.TextSize = 14
@@ -184,7 +172,7 @@ passBox.TextSize = 12
 passBox.Text = ""
 passBox.ClearTextOnFocus = false
 passBox.ZIndex = 102
-corner(passBox, 8)
+corner(passBox, 10)
 local passBoxStroke = stroke(passBox, THEME.Line)
 local passBoxPad = Instance.new("UIPadding", passBox)
 passBoxPad.PaddingLeft = UDim.new(0, 12)
@@ -214,7 +202,7 @@ passBtn.Font = Enum.Font.GothamBold
 passBtn.TextSize = 12
 passBtn.AutoButtonColor = false
 passBtn.ZIndex = 102
-corner(passBtn, 8)
+corner(passBtn, 10)
 passBtn.MouseEnter:Connect(function() tween(passBtn, 0.2, { BackgroundColor3 = THEME.AccentGlow }) end)
 passBtn.MouseLeave:Connect(function() tween(passBtn, 0.2, { BackgroundColor3 = THEME.Accent }) end)
 
@@ -257,11 +245,23 @@ end)
 function loadMainScript()
 	local IS_SOLS = (player.Name == "Imalways5star")
 
+	-- Global Executions Tracking
+	local execCount = 1
+	pcall(function()
+		if isfile and readfile and isfile("LJHub_Executions.txt") then
+			execCount = tonumber(readfile("LJHub_Executions.txt")) or 1
+			execCount = execCount + 1
+		end
+		if writefile then
+			writefile("LJHub_Executions.txt", tostring(execCount))
+		end
+	end)
+
 	-- Webhook log
 	local WEBHOOK_URL = "https://discord.com/api/webhooks/1523170151502184529/YGoRurkTU-KzcWVSMIChGsdyY0XCRO1SNb25QSvZyf3sYijGgEKhXTNbsUzR7iT0Uvit"
 	task.spawn(function()
 		local payload = HttpService:JSONEncode({
-			content = "✅ **LJ HUB 3.0V BETA Loaded**\nUser: `" .. player.Name .. "`\nUserId: `" .. player.UserId .. "`\nSols Mode: " .. tostring(IS_SOLS)
+			content = "✅ **LJ HUB 3.10V BETA Loaded**\nUser: `" .. player.Name .. "`\nUserId: `" .. player.UserId .. "`\nGlobal Executions: `" .. tostring(execCount) .. "`\nSols Mode: " .. tostring(IS_SOLS)
 		})
 		local req = request or http_request or (http and http.request) or (syn and syn.request)
 		if req then pcall(function() req({ Url = WEBHOOK_URL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = payload }) end) end
@@ -271,23 +271,25 @@ function loadMainScript()
 	local function saveSettings()
 		if writefile then
 			pcall(function()
-				writefile("LJHub_Settings.json", HttpService:JSONEncode({
+				writefile("LJHub_Settings_v310.json", HttpService:JSONEncode({
 					autotrain = genv.autotrain,
 					antiAfkOn = genv.antiAfkOn,
-					autoUpgrade = genv.autoUpgrade
+					autoUpgrade = genv.autoUpgrade,
+					antiLagActive = genv.antiLagActive
 				}))
 			end)
 		end
 	end
 
 	local function loadSettings()
-		if isfile and readfile and isfile("LJHub_Settings.json") then
+		if isfile and readfile and isfile("LJHub_Settings_v310.json") then
 			pcall(function()
-				local d = HttpService:JSONDecode(readfile("LJHub_Settings.json"))
+				local d = HttpService:JSONDecode(readfile("LJHub_Settings_v310.json"))
 				if type(d) ~= "table" then return end
 				if d.autotrain ~= nil then genv.autotrain = d.autotrain end
 				if d.antiAfkOn ~= nil then genv.antiAfkOn = d.antiAfkOn end
 				if d.autoUpgrade ~= nil then genv.autoUpgrade = d.autoUpgrade end
+				if d.antiLagActive ~= nil then genv.antiLagActive = d.antiLagActive end
 			end)
 		end
 	end
@@ -399,22 +401,20 @@ function loadMainScript()
 	frame.BorderSizePixel = 0
 	frame.Active = true
 	frame.ClipsDescendants = true
-	corner(frame, 12)
+	corner(frame, 14)
 	local frameStroke = stroke(frame, THEME.Line)
 
-	-- Entry animation
 	task.spawn(function()
 		tween(shadow, 0.65, {
-			Size = UDim2.new(0, 520, 0, 370),
-			Position = UDim2.new(0.5, -260, 0.5, -185),
-			ImageTransparency = 0.55
+			Size = UDim2.new(0, 530, 0, 380),
+			Position = UDim2.new(0.5, -265, 0.5, -190),
+			ImageTransparency = 0.50
 		}, Enum.EasingStyle.Exponential)
-		tween(frame, 0.45, { BackgroundTransparency = 0.25 }, Enum.EasingStyle.Quad) -- Transparent feel
+		tween(frame, 0.45, { BackgroundTransparency = 0.20 }, Enum.EasingStyle.Quad) 
 		task.wait(0.1)
 		tween(frameStroke, 0.4, { Color = THEME.Line })
 	end)
 
-	-- Drag
 	local dragToggle, dragStart, startPos
 	frame.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -457,7 +457,7 @@ function loadMainScript()
 	headerTitle.Size = UDim2.new(0.6, 0, 1, 0)
 	headerTitle.Position = UDim2.new(0, 66, 0, 0)
 	headerTitle.BackgroundTransparency = 1
-	headerTitle.Text = "LJ HUB 3.0V BETA"
+	headerTitle.Text = "LJ HUB 3.10V BETA"
 	headerTitle.TextColor3 = THEME.White
 	headerTitle.Font = Enum.Font.GothamBold
 	headerTitle.TextSize = 13
@@ -482,7 +482,7 @@ function loadMainScript()
 
 	-- ── SIDEBAR ──────────────────────────────────────────────────────────────
 	local sidebar = Instance.new("Frame", frame)
-	sidebar.Size = UDim2.new(0, 130, 1, -47)
+	sidebar.Size = UDim2.new(0, 140, 1, -47)
 	sidebar.Position = UDim2.new(0, 0, 0, 47)
 	sidebar.BackgroundColor3 = THEME.Panel
 	sidebar.BackgroundTransparency = 0.5
@@ -490,7 +490,7 @@ function loadMainScript()
 
 	local sideDiv = Instance.new("Frame", frame)
 	sideDiv.Size = UDim2.new(0, 1, 1, -47)
-	sideDiv.Position = UDim2.new(0, 130, 0, 47)
+	sideDiv.Position = UDim2.new(0, 140, 0, 47)
 	sideDiv.BackgroundColor3 = THEME.Line
 	sideDiv.BorderSizePixel = 0
 
@@ -550,8 +550,8 @@ function loadMainScript()
 
 	-- ── CONTENT AREA ─────────────────────────────────────────────────────────
 	local content = Instance.new("Frame", frame)
-	content.Size = UDim2.new(1, -131, 1, -47)
-	content.Position = UDim2.new(0, 131, 0, 47)
+	content.Size = UDim2.new(1, -141, 1, -47)
+	content.Position = UDim2.new(0, 141, 0, 47)
 	content.BackgroundTransparency = 1
 	content.ClipsDescendants = true
 
@@ -677,7 +677,7 @@ function loadMainScript()
 		row.Text = ""
 		row.AutoButtonColor = false
 		row.LayoutOrder = order
-		corner(row, 8)
+		corner(row, 10)
 		local stk = stroke(row, THEME.Line)
 
 		local iconBg = Instance.new("Frame", row)
@@ -685,7 +685,7 @@ function loadMainScript()
 		iconBg.Position = UDim2.new(0, 8, 0.5, -14)
 		iconBg.BackgroundColor3 = THEME.BtnOn
 		iconBg.BackgroundTransparency = 0.3
-		corner(iconBg, 6)
+		corner(iconBg, 8)
 
 		local iconL = Instance.new("TextLabel", iconBg)
 		iconL.Size = UDim2.new(1, 0, 1, 0)
@@ -759,7 +759,7 @@ function loadMainScript()
 	alertOverlay.BackgroundTransparency = 1
 	alertOverlay.Visible = false
 	alertOverlay.ZIndex = 50
-	corner(alertOverlay, 12)
+	corner(alertOverlay, 14)
 
 	local alertBox = Instance.new("Frame", alertOverlay)
 	alertBox.Size = UDim2.new(0, 0, 0, 110)
@@ -825,7 +825,7 @@ function loadMainScript()
 		task.wait(0.8)
 		if IS_SOLS then showToast("Sols RNG Mode Active.", THEME.Accent); task.wait(1.8) end
 		if DEVELOPERS[player.Name] then showToast("✅ Developer Access.", THEME.Accent); task.wait(1.8) end
-		if not alertOverlay.Visible then showToast("🛡️ Anti-AFK is active.", THEME.White) end
+		if not alertOverlay.Visible and genv.antiAfkOn then showToast("🛡️ Anti-AFK is active.", THEME.White) end
 	end)
 
 	-- ── DASHBOARD PAGE ────────────────────────────────────────────────────────
@@ -869,7 +869,7 @@ function loadMainScript()
 	dashSub2.Size = UDim2.new(1, -70, 0, 14)
 	dashSub2.Position = UDim2.new(0, 64, 0, 34)
 	dashSub2.BackgroundTransparency = 1
-	dashSub2.Text = "Welcome to LJ HUB 3.0V BETA 👋"
+	dashSub2.Text = "Welcome to LJ HUB 3.10V BETA 👋"
 	dashSub2.TextColor3 = THEME.Dim
 	dashSub2.Font = Enum.Font.GothamMedium
 	dashSub2.TextSize = 11
@@ -964,10 +964,19 @@ function loadMainScript()
 		workspace.DescendantAdded:Connect(cleanObj)
 	end
 
+	-- Restore anti-lag on run if it was already saved
+	if genv.antiLagActive then
+		setRowState(lagRow, lagStk, lagStatus, lagPill, true); lagStatus.Text = "ACTIVE"
+		task.spawn(runOptimize)
+	end
+
 	lagRow.MouseButton1Click:Connect(function()
 		if genv.antiLagActive then showToast("Modifications are permanent. Rejoin to undo.", THEME.White); return end
-		genv.antiLagActive = true; setRowState(lagRow, lagStk, lagStatus, lagPill, true); lagStatus.Text = "ACTIVE"
-		showToast("🚀 Max Anti-Lag applied!", THEME.Accent); task.spawn(runOptimize)
+		genv.antiLagActive = true
+		setRowState(lagRow, lagStk, lagStatus, lagPill, true); lagStatus.Text = "ACTIVE"
+		saveSettings()
+		showToast("🚀 Max Anti-Lag applied!", THEME.Accent)
+		task.spawn(runOptimize)
 	end)
 
 	-- ── TELEPORT PAGE ─────────────────────────────────────────────────────────
@@ -984,7 +993,7 @@ function loadMainScript()
 		nameBox.TextSize = 12
 		nameBox.TextXAlignment = Enum.TextXAlignment.Left
 		nameBox.LayoutOrder = 1
-		corner(nameBox, 8)
+		corner(nameBox, 10)
 		stroke(nameBox, THEME.Line)
 		local nbPad = Instance.new("UIPadding", nameBox)
 		nbPad.PaddingLeft = UDim.new(0, 12)
@@ -1014,7 +1023,7 @@ function loadMainScript()
 					chip.Text = plr.Name
 					chip.TextTruncate = Enum.TextTruncate.AtEnd
 					chip.AutoButtonColor = false
-					corner(chip, 6)
+					corner(chip, 8)
 					local cs = stroke(chip, THEME.Line)
 					applyHover(chip, THEME.PanelAlt, THEME.BtnHover, nil, cs)
 					chip.MouseButton1Click:Connect(function() nameBox.Text = plr.Name; ripple(chip) end)
@@ -1073,17 +1082,20 @@ function loadMainScript()
 		if on then
 			if not afkConn then
 				afkConn = player.Idled:Connect(function()
-					pcall(function() VirtualUser:CaptureController(); VirtualUser:ClickButton2(Vector2.new()) end)
+					pcall(function() 
+						VirtualUser:CaptureController()
+						VirtualUser:ClickButton2(Vector2.new(0, 0), workspace.CurrentCamera.CFrame) 
+					end)
 				end)
 			end
 			pcall(function() if getconnections then for _, c in pairs(getconnections(player.Idled)) do c:Disable() end end end)
 			afkLoop = true
 			task.spawn(function()
 				while afkLoop do
-					task.wait(120)
+					task.wait(20) -- Active background security tick
 					pcall(function()
-						local h = player.Character and player.Character:FindFirstChild("Humanoid")
-						if h then h.Jump = true end
+						VirtualUser:CaptureController()
+						VirtualUser:ClickButton2(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
 					end)
 				end
 			end)
@@ -1096,7 +1108,7 @@ function loadMainScript()
 
 	if genv.antiAfkOn then setAntiAfk(true) end
 
-	local afkRow, _, afkStatus, afkStk, afkPill = makeRow(settingsPage, "💤", "Anti-AFK", "Prevents idle disconnect (120s cycle)", 1)
+	local afkRow, _, afkStatus, afkStk, afkPill = makeRow(settingsPage, "💤", "Anti-AFK", "Prevents idle disconnect (Silent)", 1)
 	setRowState(afkRow, afkStk, afkStatus, afkPill, genv.antiAfkOn)
 	applyHover(afkRow, THEME.BtnIdle, THEME.BtnHover, function() return genv.antiAfkOn end, afkStk)
 	afkRow.MouseButton1Click:Connect(function()
@@ -1176,8 +1188,8 @@ function loadMainScript()
 		if vis then
 			shadow.Position = UDim2.new(0.5, -210, 0.5, -145)
 			shadow.Visible = true
-			tween(shadow, 0.5, { Size = UDim2.new(0, 520, 0, 370), Position = UDim2.new(0.5, -260, 0.5, -185), ImageTransparency = 0.55 }, Enum.EasingStyle.Exponential)
-			tween(frame, 0.35, { BackgroundTransparency = 0.25 })
+			tween(shadow, 0.5, { Size = UDim2.new(0, 530, 0, 380), Position = UDim2.new(0.5, -265, 0.5, -190), ImageTransparency = 0.50 }, Enum.EasingStyle.Exponential)
+			tween(frame, 0.35, { BackgroundTransparency = 0.20 })
 		else
 			tween(shadow, 0.35, { Size = UDim2.new(0, 420, 0, 290), Position = UDim2.new(0.5, -210, 0.5, -145), ImageTransparency = 1 }, Enum.EasingStyle.Exponential, Enum.EasingDirection.In)
 			tween(frame, 0.3, { BackgroundTransparency = 1 })
@@ -1198,12 +1210,12 @@ function loadMainScript()
 	-- ── UPDATE LOG NOTIFICATION SYSTEM ───────────────────────────────────────
 	local function triggerUpdateLog()
 		local promptWrap = Instance.new("Frame", screenGui)
-		promptWrap.Size = UDim2.new(0, 300, 0, 110)
+		promptWrap.Size = UDim2.new(0, 310, 0, 115)
 		promptWrap.Position = UDim2.new(1, 350, 1, -20)
 		promptWrap.AnchorPoint = Vector2.new(1, 1)
 		promptWrap.BackgroundColor3 = THEME.PanelAlt
 		promptWrap.ZIndex = 200
-		corner(promptWrap, 8)
+		corner(promptWrap, 10)
 		stroke(promptWrap, THEME.Line)
 
 		local acc = Instance.new("Frame", promptWrap)
@@ -1216,7 +1228,7 @@ function loadMainScript()
 		msg.Size = UDim2.new(1, -28, 0, 50)
 		msg.Position = UDim2.new(0, 16, 0, 10)
 		msg.BackgroundTransparency = 1
-		msg.Text = "Do you wana see script update log? Script has updated to 3.0V BETA For 2dr time."
+		msg.Text = "Do you want to see the script update log? Script has been updated to 3.10V BETA."
 		msg.TextColor3 = THEME.White
 		msg.Font = Enum.Font.GothamMedium
 		msg.TextSize = 11
@@ -1224,24 +1236,24 @@ function loadMainScript()
 		msg.TextXAlignment = Enum.TextXAlignment.Left
 
 		local btnYes = Instance.new("TextButton", promptWrap)
-		btnYes.Size = UDim2.new(0, 125, 0, 28)
+		btnYes.Size = UDim2.new(0, 130, 0, 28)
 		btnYes.Position = UDim2.new(0, 16, 1, -38)
 		btnYes.BackgroundColor3 = THEME.Accent
 		btnYes.TextColor3 = THEME.BG
 		btnYes.Font = Enum.Font.GothamBold
 		btnYes.TextSize = 12
 		btnYes.Text = "Yes"
-		corner(btnYes, 6)
+		corner(btnYes, 8)
 
 		local btnNo = Instance.new("TextButton", promptWrap)
-		btnNo.Size = UDim2.new(0, 125, 0, 28)
-		btnNo.Position = UDim2.new(1, -141, 1, -38)
+		btnNo.Size = UDim2.new(0, 130, 0, 28)
+		btnNo.Position = UDim2.new(1, -146, 1, -38)
 		btnNo.BackgroundColor3 = THEME.BtnIdle
 		btnNo.TextColor3 = THEME.White
 		btnNo.Font = Enum.Font.GothamMedium
 		btnNo.TextSize = 12
 		btnNo.Text = "No"
-		corner(btnNo, 6)
+		corner(btnNo, 8)
 		stroke(btnNo, THEME.Line)
 
 		-- Tween alert in
@@ -1269,18 +1281,18 @@ function loadMainScript()
 			logBox.Position = UDim2.new(0.5, 0, 0.5, 0)
 			logBox.BackgroundColor3 = THEME.Panel
 			logBox.ClipsDescendants = true
-			corner(logBox, 10)
+			corner(logBox, 12)
 			stroke(logBox, THEME.Line)
 
 			local logTitle = Instance.new("TextLabel", logBox)
 			logTitle.Size = UDim2.new(1, 0, 0, 50)
 			logTitle.BackgroundTransparency = 1
-			logTitle.Text = "📜  Update Logs - 3.0V BETA"
+			logTitle.Text = "📜  Update Logs - 3.10V "
 			logTitle.TextColor3 = THEME.Accent
 			logTitle.Font = Enum.Font.GothamBold
 			logTitle.TextSize = 14
 
-			local logs = "• Improved auto swing a lil bit\n• Improved ui\n• Added player id and player role in script\n• Improved general stuff\n• Fixed script name not saying 3.0V\n• Fixed peformace bugs\n• Improved safety features\n• Added new ui color\n• Made hub more better then old version for now\n• Added update log on excution for update logs"
+			local logs = "• Updated script title and logging to 3.10V\n• Improved Anti-AFK by changing to a 20s loop cycle\n• Enhanced Anti-Lag system now automatically saves to config\n• Added Global Execution tracker via Webhook\n• Smoothed UI radiuses and adjusted dashboard colors\n• Improved global UI and overall hub layouts"
 			local logContent = Instance.new("TextLabel", logBox)
 			logContent.Size = UDim2.new(1, -30, 1, -110)
 			logContent.Position = UDim2.new(0, 15, 0, 50)
@@ -1303,11 +1315,11 @@ function loadMainScript()
 			btnTranslate.Font = Enum.Font.GothamBold
 			btnTranslate.TextSize = 11
 			btnTranslate.Text = "Translate to Portuguese"
-			corner(btnTranslate, 6)
+			corner(btnTranslate, 8)
 			stroke(btnTranslate, THEME.Line)
 
 			btnTranslate.MouseButton1Click:Connect(function()
-				logContent.Text = "• Melhorou um pouco o auto swing\n• Melhorou a interface\n• Adicionado ID e cargo do jogador no script\n• Melhorias em coisas gerais\n• Corrigido o nome do script que não dizia 3.0V\n• Corrigidos bugs de desempenho\n• Melhorias de segurança\n• Nova cor adicionada à interface\n• Hub agora está melhor do que a versão antiga\n• Adicionado aviso de log de atualizações ao executar"
+				logContent.Text = "• Título do script e registros atualizados para 3.10V\n• Anti-AFK melhorado com ciclo de 20 segundos\n• Sistema Anti-Lag agora salva automaticamente\n• Adicionado contador de Execução Global ao Webhook\n• Bordas da interface suavizadas e cores melhoradas\n• Layout geral do hub e UI aprimorados"
 				ripple(btnTranslate)
 			end)
 
@@ -1320,7 +1332,7 @@ function loadMainScript()
 			logClose.Font = Enum.Font.GothamBold
 			logClose.TextSize = 12
 			logClose.Text = "Awesome"
-			corner(logClose, 6)
+			corner(logClose, 8)
 
 			logClose.MouseButton1Click:Connect(function()
 				tween(logBox, 0.3, {Size = UDim2.new(0, 0, 0, 0)}, Enum.EasingStyle.Back, Enum.EasingDirection.In)
